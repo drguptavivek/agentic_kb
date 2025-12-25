@@ -110,9 +110,13 @@ Monitor: https://github.com/typesense/typesense-python/releases
 After applying the fix:
 
 ```bash
-# Should show NO deprecation warnings
-uv run python scripts/search_typesense.py "test query"
-uv run python scripts/index_typesense.py
+# Should show NO deprecation warnings (direct repo)
+uv run --with typesense python scripts/search_typesense.py "test query"
+uv run --with typesense --with tqdm python scripts/index_typesense.py
+
+# Or from parent project (submodule)
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "test query"
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ## Related

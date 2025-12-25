@@ -124,15 +124,18 @@ This fix was applied to:
 After applying the fix, rebuild the index:
 
 ```bash
-# Rebuild index
-uv run python scripts/index_typesense.py
+# Rebuild index (direct repo)
+uv run --with typesense --with tqdm python scripts/index_typesense.py
+
+# Or from parent project (submodule)
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 
 # Verify tags are extracted
-uv run python scripts/search_typesense.py "pandoc" --k 3
+uv run --with typesense python scripts/search_typesense.py "pandoc" --k 3
 # Should show: Tags: pandoc, docx, word, page-numbering, ...
 
 # Test tag filtering
-uv run python scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
+uv run --with typesense python scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
 # Should return filtered results
 ```
 

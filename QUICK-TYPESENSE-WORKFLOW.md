@@ -5,9 +5,6 @@
 ## Setup (One-Time)
 
 ```bash
-# Install dependency in parent project
-uv add typesense
-
 # Create Docker volume
 docker volume create typesense-agentic-kb-data
 
@@ -17,42 +14,44 @@ docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
   typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
 ```
 
+**No dependency installation required!** The `uv run --with` flags automatically fetch dependencies.
+
 ## Index KB
 
 ```bash
 # Build search index (run after adding/updating knowledge files)
-uv run python agentic_kb/scripts/index_typesense.py
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ## Search
 
 ```bash
 # Basic search
-uv run python agentic_kb/scripts/search_typesense.py "your query"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "your query"
 
 # Limit results
-uv run python agentic_kb/scripts/search_typesense.py "page numbering" --k 10
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering" --k 10
 
 # Filter by tag
-uv run python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
 
 # Filter by multiple tags (OR)
-uv run python agentic_kb/scripts/search_typesense.py "page" --filter "tags:=[pandoc,docx]"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "tags:=[pandoc,docx]"
 
 # Filter by domain
-uv run python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
 
 # Filter by type (howto, reference, checklist, policy, note)
-uv run python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
 
 # Filter by status (draft, approved, deprecated)
-uv run python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
 
 # Combine filters (AND)
-uv run python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search && type:howto"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search && type:howto"
 
 # Search specific fields
-uv run python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
 ```
 
 
@@ -60,7 +59,7 @@ uv run python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "headin
 
 ```bash
 # Rebuild index if search returns no results
-uv run python agentic_kb/scripts/index_typesense.py
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 
 # Check Typesense server status
 curl http://localhost:8108/health
@@ -75,10 +74,10 @@ If running directly in the KB repo (not as submodule), omit the `agentic_kb/` pr
 
 ```bash
 # Index
-uv run python scripts/index_typesense.py
+uv run --with typesense --with tqdm python scripts/index_typesense.py
 
 # Search
-uv run python scripts/search_typesense.py "your query"
+uv run --with typesense python scripts/search_typesense.py "your query"
 ```
 
 ## Performance

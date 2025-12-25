@@ -7,7 +7,7 @@ tags:
   - search
   - full-text
   - indexing
-status: draft
+status: approved
 created: 2025-12-25
 updated: 2025-12-25
 ---
@@ -18,13 +18,7 @@ This guide shows how to integrate Typesense for typo-tolerant, full-text search 
 
 ## Prerequisites
 
-1. Install Typesense dependencies:
-
-```bash
-uv add typesense
-```
-
-2. Install and run Typesense server using Docker Compose (recommended):
+Install and run Typesense server using Docker Compose (recommended):
 
 Create `docker-compose.yml`:
 
@@ -78,26 +72,30 @@ If not set, the scripts use the defaults above.
 
 ## Indexing the KB
 
-Build the Typesense index:
+Build the Typesense index (no dependency installation required):
 
 ```bash
-uv run python scripts/index_typesense.py
+# Direct repo usage
+uv run --with typesense --with tqdm python scripts/index_typesense.py
+
+# Submodule usage (run from parent project root)
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ### Index Options
 
 ```bash
-# Custom host/port
-uv run python scripts/index_typesense.py --host localhost --port 8108
+# Custom host/port (direct repo)
+uv run --with typesense --with tqdm python scripts/index_typesense.py --host localhost --port 8108
 
-# Custom API key
-uv run python scripts/index_typesense.py --api-key your-secret-key
+# Custom API key (submodule)
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py --api-key your-secret-key
 
 # Custom collection name
-uv run python scripts/index_typesense.py --collection my_kb
+uv run --with typesense --with tqdm python scripts/index_typesense.py --collection my_kb
 
 # Custom batch size for large KBs
-uv run python scripts/index_typesense.py --batch-size 200
+uv run --with typesense --with tqdm python scripts/index_typesense.py --batch-size 200
 ```
 
 ## Searching
@@ -105,26 +103,30 @@ uv run python scripts/index_typesense.py --batch-size 200
 Search the indexed KB:
 
 ```bash
-uv run python scripts/search_typesense.py "your query"
+# Direct repo usage
+uv run --with typesense python scripts/search_typesense.py "your query"
+
+# Submodule usage (run from parent project root)
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "your query"
 ```
 
 ### Search Examples
 
 ```bash
-# Basic search
-uv run python scripts/search_typesense.py "page numbering pandoc"
+# Basic search (submodule)
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
 
 # Limit results
-uv run python scripts/search_typesense.py "page numbering pandoc" --k 10
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc" --k 10
 
 # Filter by tags
-uv run python scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
 
 # Search specific fields
-uv run python scripts/search_typesense.py "pandoc" --query-by "heading,path"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
 
-# Custom collection
-uv run python scripts/search_typesense.py "query" --collection my_kb
+# Custom collection (direct repo)
+uv run --with typesense python scripts/search_typesense.py "query" --collection my_kb
 ```
 
 ## How It Works
@@ -192,7 +194,11 @@ docker restart <container-id>
 Rebuild the index:
 
 ```bash
-uv run python scripts/index_typesense.py
+# Direct repo
+uv run --with typesense --with tqdm python scripts/index_typesense.py
+
+# Submodule
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ### No Results

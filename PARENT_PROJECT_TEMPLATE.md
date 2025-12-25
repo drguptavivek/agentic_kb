@@ -36,12 +36,12 @@ If Typesense is set up (5-10x faster than vector search):
 
 ```bash
 # Basic search
-uv run python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
 
 # Filter by domain/type/status
-uv run python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
-uv run python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
-uv run python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
 
 # See agentic_kb/QUICK-TYPESENSE-WORKFLOW.md for setup and examples
 ```
@@ -51,8 +51,10 @@ uv run python agentic_kb/scripts/search_typesense.py "search" --filter "status:a
 If vector search is set up (use for conceptual queries):
 
 ```bash
-uv run python agentic_kb/scripts/search.py "your query"
-uv run python agentic_kb/scripts/search.py "page numbering in pandoc" --min-score 0.8
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
+cd ..
 ```
 
 ### KB Scope and Rules

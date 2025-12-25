@@ -92,8 +92,13 @@ This project uses `agentic_kb` as a git submodule for reusable knowledge.
 rg "your query" agentic_kb/knowledge/
 rg "#tag" agentic_kb/knowledge/
 
-# Vector search (if enabled)
-uv run python agentic_kb/scripts/search.py "your query" --min-score 0.8
+# Typesense search (recommended - fast)
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "your query"
+
+# Vector search (if enabled - semantic)
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query" --min-score 0.8
+cd ..
 ```
 
 ### KB Scope

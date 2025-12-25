@@ -51,11 +51,15 @@ rg "ISO 27001" agentic_kb/knowledge/
 ### Offline Vector Search (Optional)
 
 ```bash
-uv init
-uv run python agentic_kb/scripts/recommend_setup.py
-uv add faiss-cpu numpy sentence-transformers tqdm
-uv run python agentic_kb/scripts/index_kb.py
-uv run python agentic_kb/scripts/search.py "page numbering in pandoc" --min-score 0.8
+# Setup and index (one-time, 5-10 minutes)
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+cd ..
+
+# Search
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
+cd ..
 ```
 
 
@@ -95,25 +99,19 @@ For semantic/conceptual queries when keyword search isn't sufficient.
 
 **Setup**:
 
-1. Add the dependencies to the parent project's environment:
-
-```bash
-uv add faiss-cpu numpy sentence-transformers tqdm
-```
-
-2. Build the vector index (run from `agentic_kb/`):
+1. Build the vector index (one-time, 5-10 minutes):
 
 ```bash
 cd agentic_kb
-uv run python scripts/index_kb.py
+uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 cd ..
 ```
 
-3. Query the index:
+2. Query the index:
 
 ```bash
 cd agentic_kb
-uv run python scripts/search.py "page numbering in pandoc" --min-score 0.8
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
 ```
 
@@ -143,36 +141,33 @@ For typo-tolerant, keyword-based search with faceting and filtering.
 
 **Quick Start**:
 
-1. Install dependencies and start Typesense server (Docker Compose recommended):
+1. Start Typesense server (Docker with named volume):
 
 ```bash
-uv add typesense
-
-# Create docker-compose.yml with Typesense config (see full guide)
-docker-compose up -d
-
-# Or use Docker directly with named volume:
 export TYPESENSE_API_KEY=xyz
 docker volume create typesense-agentic-kb-data
-docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data  typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
-
+docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
+  typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
 ```
 
 2. Build the index:
 
 ```bash
-uv run python scripts/index_typesense.py
-# from Submodule
-uv run python agentic_kb/scripts/index_typesense.py
+# Direct repo usage
+uv run --with typesense --with tqdm python scripts/index_typesense.py
+
+# Submodule usage
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 3. Search:
 
 ```bash
-uv run python scripts/search_typesense.py "page numbering pandoc"
-uv run python scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
-# from Submodule
-uv run python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
+# Direct repo usage
+uv run --with typesense python scripts/search_typesense.py "page numbering pandoc"
+
+# Submodule usage
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
 ```
 
 **When to Use**:

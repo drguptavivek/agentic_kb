@@ -26,14 +26,16 @@ When agents need to answer questions using the KB, they should follow a structur
 Use the appropriate search backend:
 
 ```bash
-# Typesense (fast, keyword-based)
-uv run python scripts/search_typesense.py "page numbering pandoc" --k 3
+# Typesense (fast, keyword-based) - submodule usage
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc" --k 3
 
-# FAISS (semantic, concept-based)
-uv run python scripts/search.py "page numbering pandoc" --k 3
+# FAISS (semantic, concept-based) - submodule usage
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering pandoc" --k 3
+cd ..
 
 # ripgrep (exact patterns)
-rg "page.*number" knowledge/
+rg "page.*number" agentic_kb/knowledge/
 ```
 
 **Important**: Typesense returns the **full chunk text** (not snippets!), while FAISS and ripgrep only return file paths.
@@ -128,7 +130,8 @@ Use the retrieved content to answer the user's question:
 
 ### Step 1: Search
 ```bash
-uv run python scripts/search_typesense.py "page numbering pandoc" --k 3
+# Submodule usage
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc" --k 3
 ```
 
 **Results**:

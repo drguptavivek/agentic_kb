@@ -64,39 +64,38 @@ Fast, typo-tolerant search with faceted filtering. **5-10x faster than vector se
 
 ### Setup (One-Time)
 
-1. Install dependency and start Typesense server:
+Start Typesense server:
 
 ```bash
-uv add typesense
 export TYPESENSE_API_KEY=xyz
 docker volume create typesense-agentic-kb-data
 docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
   typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
 ```
 
-2. Build the index (run from parent project root):
+Build the index (run from parent project root):
 
 ```bash
-uv run python agentic_kb/scripts/index_typesense.py
+uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ### Search
 
 ```bash
 # Basic search
-uv run python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
 
 # Filter by domain
-uv run python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
 
 # Filter by type (howto, reference, checklist, policy, note)
-uv run python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
 
 # Filter by status (draft, approved, deprecated)
-uv run python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
 
 # Combine filters
-uv run python agentic_kb/scripts/search_typesense.py "search" \
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" \
   --filter "domain:Search && type:howto && status:approved"
 ```
 
@@ -108,27 +107,27 @@ uv run python agentic_kb/scripts/search_typesense.py "search" \
 
 Use for semantic/conceptual queries when Typesense doesn't find relevant results:
 
-1. Add the dependencies to the parent project's environment:
+1. Build the vector index (run from parent project root):
 
 ```bash
-uv add faiss-cpu numpy sentence-transformers tqdm
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+cd ..
 ```
 
-2. Build the vector index (run from `agentic_kb/`):
+2. Query the index (run from parent project root):
 
 ```bash
-uv run python scripts/index_kb.py
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
+cd ..
 ```
 
-3. Query the index (run from `agentic_kb/`):
-
-```bash
-uv run python scripts/search.py "your query"
-uv run python scripts/search.py "page numbering in pandoc" --min-score 0.8
-```
+**Quick Reference**: See `agentic_kb/QUICK-FAISS-WORKFLOW.md`
 
 Notes:
-- The index is stored under `.kb_index/`.
+- The index is stored under `agentic_kb/.kb_index/`.
 - Use `--model` to override the default embedding model.
 - Filter by similarity with `--min-score` (default: `0.7`).
 - Slower but better for conceptual queries.

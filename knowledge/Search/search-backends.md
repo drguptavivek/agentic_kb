@@ -8,7 +8,7 @@ tags:
   - typesense
   - vector-search
   - full-text
-status: draft
+status: approved
 created: 2025-12-25
 updated: 2025-12-25
 ---
@@ -147,14 +147,16 @@ This knowledge base supports multiple search backends, each optimized for differ
 For comprehensive search, combine multiple backends:
 
 ```bash
-# 1. Semantic search for concepts
-uv run python scripts/search.py "document formatting" --min-score 0.7
+# 1. Semantic search for concepts (direct repo)
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "document formatting" --min-score 0.7
+cd ..
 
-# 2. Keyword search for specifics
-uv run python scripts/search_typesense.py "pandoc docx"
+# 2. Keyword search for specifics (submodule)
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc docx"
 
 # 3. Exact pattern matching
-rg "pandoc.*--reference-doc" knowledge/
+rg "pandoc.*--reference-doc" agentic_kb/knowledge/
 ```
 
 ### Building a Hybrid Search Tool
@@ -204,11 +206,15 @@ def hybrid_search(query: str):
 ### FAISS Configuration
 
 ```bash
-# High quality embeddings (slower)
-uv run python scripts/index_kb.py --model sentence-transformers/all-mpnet-base-v2
+# High quality embeddings (slower) - direct repo
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-mpnet-base-v2
+cd ..
 
-# Fast embeddings (faster)
-uv run python scripts/index_kb.py --model sentence-transformers/all-MiniLM-L6-v2
+# Fast embeddings (faster) - direct repo
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-MiniLM-L6-v2
+cd ..
 ```
 
 ### Typesense Configuration
@@ -239,12 +245,20 @@ rg "query" knowledge/ -A 3 -B 3
 
 ### For Agent Workflows
 
-Use FAISS as primary, ripgrep for verification:
+Use Typesense as primary (faster), FAISS for semantic queries, ripgrep for verification:
 
 ```bash
-# Agent search pattern
-uv run python scripts/search.py "page numbering" --min-score 0.8
-rg "page.*number" knowledge/
+# Agent search pattern (submodule)
+# 1. Try Typesense first (10-50ms)
+uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering" --k 5
+
+# 2. Use FAISS for conceptual queries (100-500ms)
+cd agentic_kb
+uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering" --min-score 0.8
+cd ..
+
+# 3. Verify with ripgrep
+rg "page.*number" agentic_kb/knowledge/
 ```
 
 ### For User-Facing Search
