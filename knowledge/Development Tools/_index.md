@@ -46,3 +46,50 @@ updated: 2025-12-25
 - [[sveltekit-shallow-routing]]
 - [[sveltekit-observability]]
 - [[sveltekit-packaging]]
+
+## SvelteKit - Build and Deploy
+
+- [[sveltekit-building-your-app]]
+- [[sveltekit-adapters]]
+- [[sveltekit-adapter-auto]]
+- [[sveltekit-adapter-node]]
+- [[sveltekit-adapter-static]]
+- [[sveltekit-single-page-apps]]
+- [[sveltekit-adapter-cloudflare]]
+- [[sveltekit-adapter-cloudflare-workers]]
+- [[sveltekit-adapter-netlify]]
+- [[sveltekit-adapter-vercel]]
+- [[sveltekit-writing-adapters]]
+
+## Svelte CLI - Commands
+
+- [[svelte-cli-sv-create]]
+- [[svelte-cli-sv-add]]
+- [[svelte-cli-sv-check]]
+- [[svelte-cli-sv-migrate]]
+
+## Svelte CLI - Add-ons
+
+- [[svelte-cli-addon-devtools-json]]
+- [[svelte-cli-addon-drizzle]]
+- [[svelte-cli-addon-eslint]]
+- [[svelte-cli-addon-lucia]]
+- [[svelte-cli-addon-mcp]]
+- [[svelte-cli-addon-mdsvex]]
+- [[svelte-cli-addon-paraglide]]
+- [[svelte-cli-addon-playwright]]
+- [[svelte-cli-addon-prettier]]
+- [[svelte-cli-addon-storybook]]
+- [[svelte-cli-addon-sveltekit-adapter]]
+- [[svelte-cli-addon-tailwind]]
+- [[svelte-cli-addon-vitest]]
+
+## Drizzle ORM
+
+- [[drizzle-orm-migrations]]
+- [[drizzle-kit-generate]]
+- [[drizzle-kit-check]]
+- [[drizzle-kit-push]]
+- [[drizzle-kit-pull]]
+- [[drizzle-kit-up]]
+- [[drizzle-orm-goodies]]
