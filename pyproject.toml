@@ -1,0 +1,15 @@
+[project]
+name = "agentic-kb"
+version = "0.1.0"
+description = "Local, offline search for the agentic knowledge base"
+requires-python = ">=3.10"
+dependencies = [
+  "faiss-cpu>=1.8.0",
+  "numpy>=1.26.0",
+  "sentence-transformers>=2.7.0",
+  "tqdm>=4.66.0",
+]
+
+[project.scripts]
+search = "scripts.search:main"
+index = "scripts.index_kb:main"

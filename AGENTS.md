@@ -21,7 +21,7 @@ This is the single source of truth for agent behavior when using this KB.
 2. Open the most relevant file(s).
 3. Answer using KB content, preferring exact steps or checklists.
 4. Cite sources using: `<file path> -> <heading>`.
-5. If missing, say: "Not found in KB".
+5. If missing, say: "Not found in KB" and suggest where to add it.
 
 ## Deterministic Search Pattern
 
@@ -35,12 +35,45 @@ rg "pandoc" agentic_kb/knowledge/
 rg "page number" agentic_kb/knowledge/
 ```
 
+## Offline Vector Search
+
+Use the local, offline search tool when it helps retrieval:
+
+1. Add the dependencies to the parent project's environment (run in the parent repo):
+
+```bash
+uv add faiss-cpu numpy sentence-transformers tqdm
+```
+
+2. Build the vector index (run from `agentic_kb/`):
+
+```bash
+uv run python scripts/index_kb.py
+```
+
+3. Query the index (run from `agentic_kb/`):
+
+```bash
+uv run python scripts/search.py "your query"
+uv run python scripts/search.py "page numbering in pandoc"
+uv run python scripts/search.py "page numbering in pandoc" --min-score 0.8
+
+```
+
+Notes:
+- The index is stored under `.kb_index/`.
+- The default model can be overridden with `--model /path/to/local/model`.
+- Filter by similarity with `--min-score` (default: `0.7`).
+- This tool must run fully offline; do not call external APIs.
+- Ensure `.kb_index/` is listed in `.gitignore`.
+
 ## Knowledge Capture
 
 Agents must document new, reusable knowledge learned during tasks. 
 If a KB update is needed based on new findings, ask for user confirmation before making edits.
 Follow `knowledge/Document Automation/learning-capture-steps.md`.
 Follow `KNOWLEDGE_CONVENTIONS.md`.
+
 
 ## Obsidian-Specific Requirements
 

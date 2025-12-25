@@ -109,6 +109,38 @@ git submodule add https://github.com/drguptavivek/agentic_kb.git agentic_kb
 git submodule update --remote agentic_kb
 ```
 
+## Offline Vector Search
+
+Use the local, offline search tool when it helps retrieval:
+
+1. Add the dependencies to the parent project's environment (run in the parent repo):
+
+```bash
+uv add faiss-cpu numpy sentence-transformers tqdm
+```
+
+2. Build the vector index (run from `agentic_kb/`):
+
+```bash
+uv run python scripts/index_kb.py
+```
+
+3. Query the index (run from `agentic_kb/`):
+
+```bash
+uv run python scripts/search.py "your query"
+uv run python scripts/search.py "page numbering in pandoc"
+uv run python scripts/search.py "page numbering in pandoc" --min-score 0.8
+
+```
+
+Notes:
+- The index is stored under `.kb_index/`.
+- The default model can be overridden with `--model /path/to/local/model`.
+- Filter by similarity with `--min-score` (default: `0.7`).
+- This tool must run fully offline; do not call external APIs.
+- Ensure `.kb_index/` is listed in `.gitignore`.
+
 ### As Markdown Files
 
 All files are standard markdown with YAML frontmatter. Read with any markdown viewer.
