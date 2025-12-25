@@ -10,58 +10,49 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 
 **Obsidian-enabled knowledge base** with folder organization, wikilinks, and graph view.
 
+**Offline Vector Search** enabled
+
 **Need to add or update knowledge?** See [INSTRUCTIONS.md](INSTRUCTIONS.md)
 
----
-
-## Knowledge by Domain
-
-### Document Automation
-
-| File | Description | Tags |
-|------|-------------|------|
-| [[DOCX Page Numbering with Pandoc]] | Complete guide to DOCX page numbering with Pandoc - problems, solutions, and best practices | `#pandoc`, `#docx`, `#word`, `#page-numbering` |
-| [[OOXML Manipulation Techniques]] | OOXML structure, Python manipulation, unpacking/packing workflows | `#ooxml`, `#docx`, `#word`, `#xml`, `#python` |
-| [[Page Numbering Implementation]] | Quick reference for page numbering implementation with code examples | `#pandoc`, `#docx`, `#word`, `#page-numbering`, `#implementation` |
-| [[Agent Memory Practices]] | How agents capture reusable knowledge during tasks | `#agents`, `#knowledge-base`, `#documentation`, `#workflow` |
-| [[Obsidian Documentation Practices]] | Documentation structure and retrieval-friendly note patterns | `#obsidian`, `#documentation`, `#knowledge-base`, `#workflow` |
-| [[Learning Capture Steps]] | Step-by-step process for documenting new learnings | `#knowledge-base`, `#documentation`, `#workflow`, `#agents` |
-
-### Development Tools
-
-*Coming soon - Add your knowledge here*
-
-### APIs & Integrations
-
-*Coming soon - Add your knowledge here*
-
-### Security
-
-| File | Description | Tags |
-|------|-------------|------|
-| [[ISO 27001 Compliance Checklist]] | Complete ISO/IEC 27001:2022 compliance checklist with 93 controls across 14 domains | `#iso27001`, `#security`, `#compliance`, `#audit`, `#isms` |
-
-### DevOps & CI/CD
-
-*Coming soon - Add your knowledge here*
+**Integrate instructions for your AGENT** See [AGENTS.md](AGENTS.md)
 
 ---
 
-## Directory Structure
 
-```
-agentic_kb/
-├── README.md           # This file - knowledge index
-├── INSTRUCTIONS.md     # How to add/update knowledge
-├── AGENTS.md           # Agent instructions (direct and submodule paths)
-├── KNOWLEDGE_CONVENTIONS.md  # Knowledge organization and maintenance rules
-├── GIT_WORKFLOWS.md    # Git and submodule workflows
-├── LICENSE            # License file
-├── .obsidian/         # Obsidian configuration (graph view, settings)
-└── knowledge/         # All knowledge files organized by domain
+## Using This Knowledge Base in Your Projects
+
+Best practice: use this repo as a git submodule.
+
+### Add as Submodule
+
+```bash
+git submodule add https://github.com/drguptavivek/agentic_kb.git agentic_kb
+git submodule update --init --recursive
 ```
 
----
+### Search with ripgrep
+
+```bash
+# Tag search
+rg "#pandoc" agentic_kb/knowledge/
+rg "#docx" agentic_kb/knowledge/
+rg "#ooxml" agentic_kb/knowledge/
+# Phrase Search
+rg "page numbering" agentic_kb/knowledge/
+rg "ISO 27001" agentic_kb/knowledge/
+```
+
+### Offline Vector Search (Optional)
+
+```bash
+uv init
+uv run python agentic_kb/scripts/recommend_setup.py
+uv add faiss-cpu numpy sentence-transformers tqdm
+uv run python agentic_kb/scripts/index_kb.py
+uv run python agentic_kb/scripts/search.py "page numbering in pandoc" --min-score 0.8
+```
+
+
 
 ## Finding Information
 
@@ -89,25 +80,6 @@ Each file has a **Related** section at the end with wikilinks to connected topic
 
 ---
 
-## Using This Knowledge Base
-
-### In Obsidian (Recommended)
-
-1. Clone or download this repository
-2. Open the folder in Obsidian
-3. Use Graph View to explore connections
-4. Click wikilinks `[[filename]]` to navigate between topics
-5. Use `#tags` to discover related content
-
-### As Git Submodule
-
-```bash
-# Add to your project
-git submodule add https://github.com/drguptavivek/agentic_kb.git agentic_kb
-
-# Update to latest
-git submodule update --remote agentic_kb
-```
 
 ## Offline Vector Search
 
@@ -141,11 +113,67 @@ Notes:
 - This tool must run fully offline; do not call external APIs.
 - Ensure `.kb_index/` is listed in `.gitignore`.
 
-### As Markdown Files
+### Setup Recommendations (Optional)
 
-All files are standard markdown with YAML frontmatter. Read with any markdown viewer.
+Generate OS- and hardware-specific setup suggestions (no installs performed):
+
+```bash
+uv run python scripts/recommend_setup.py
+```
+
+
+## Browse Knowledge by Domain
+
+### Document Automation
+
+| File | Description | Tags |
+|------|-------------|------|
+| [[docx-page-numbering-pandoc]] | Complete guide to DOCX page numbering with Pandoc - problems, solutions, and best practices | `#pandoc`, `#docx`, `#word`, `#page-numbering` |
+| [[ooxml-manipulation-techniques]] | OOXML structure, Python manipulation, unpacking/packing workflows | `#ooxml`, `#docx`, `#word`, `#xml`, `#python` |
+| [[page-numbering-implementation]] | Quick reference for page numbering implementation with code examples | `#pandoc`, `#docx`, `#word`, `#page-numbering`, `#implementation` |
+| [[agent-memory-practices]] | How agents capture reusable knowledge during tasks | `#agents`, `#knowledge-base`, `#documentation`, `#workflow` |
+| [[obsidian-documentation]] | Documentation structure and retrieval-friendly note patterns | `#obsidian`, `#documentation`, `#knowledge-base`, `#workflow` |
+| [[learning-capture-steps]] | Step-by-step process for documenting new learnings | `#knowledge-base`, `#documentation`, `#workflow`, `#agents` |
+
+### Development Tools
+
+*Coming soon - Add your knowledge here*
+
+### APIs & Integrations
+
+*Coming soon - Add your knowledge here*
+
+### Security
+
+| File | Description | Tags |
+|------|-------------|------|
+| [[iso-27001-compliance-checklist]] | Complete ISO/IEC 27001:2022 compliance checklist with 93 controls across 14 domains | `#iso27001`, `#security`, `#compliance`, `#audit`, `#isms` |
+
+### DevOps & CI/CD
+
+*Coming soon - Add your knowledge here*
 
 ---
+
+## Directory Structure
+
+```
+agentic_kb/
+├── README.md           # This file - knowledge index
+├── INSTRUCTIONS.md     # How to add/update knowledge
+├── AGENTS.md           # Agent instructions (direct and submodule paths)
+├── CLAUDE.md           # Symlink to AGENTS.md for Claude Code integration
+├── KNOWLEDGE_CONVENTIONS.md  # Knowledge organization and maintenance rules
+├── GIT_WORKFLOWS.md    # Git and submodule workflows
+├── LICENSE            # License file
+├── pyproject.toml     # Python project configuration
+├── .obsidian/         # Obsidian configuration (graph view, settings)
+├── scripts/           # Vector search and setup utilities
+└── knowledge/         # All knowledge files organized by domain
+```
+
+---
+
 
 ## Conventions
 
