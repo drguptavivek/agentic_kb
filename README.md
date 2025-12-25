@@ -139,6 +139,14 @@ uv run python scripts/recommend_setup.py
 | [[obsidian-documentation]] | Documentation structure and retrieval-friendly note patterns | `#obsidian`, `#documentation`, `#knowledge-base`, `#workflow` |
 | [[learning-capture-steps]] | Step-by-step process for documenting new learnings | `#knowledge-base`, `#documentation`, `#workflow`, `#agents` |
 
+### Android Development
+
+| File | Description | Tags |
+|------|-------------|------|
+| [[android-common-pitfalls]] | Common pitfalls including threading, lifecycle, and build issues in Android | `#android`, `#threading`, `#performance` |
+| [[odk-collect-core]] | Core architecture of ODK Collect (MVVM, JavaRosa, Repo Pattern) | `#odk`, `#architecture`, `#android` |
+| [[aiims-odk-collect-customizations]] | AIIMS-specific fork details: Auth, PIN Security, Data Isolation | `#aiims`, `#auth`, `#customization` |
+
 ### Development Tools
 
 *Coming soon - Add your knowledge here*
