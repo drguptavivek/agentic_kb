@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "knowledge/Document Automation/docx-page-numbering-pandoc.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for README"
+              "title": "Backlinks for docx-page-numbering-pandoc"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "README.md",
+                "file": "knowledge/Document Automation/docx-page-numbering-pandoc.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from README"
+              "title": "Outgoing links from docx-page-numbering-pandoc"
             }
           },
           {
@@ -156,21 +156,31 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "README.md",
+                "file": "knowledge/Document Automation/docx-page-numbering-pandoc.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of README"
+              "title": "Outline of docx-page-numbering-pandoc"
+            }
+          },
+          {
+            "id": "ec8e675255239ccb",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
             }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 272.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -185,7 +195,7 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "24d0496e130a6bf0",
+  "active": "6dd627f2305cd5d3",
   "lastOpenFiles": [
     "Untitled 1.canvas",
     "knowledge/Document Automation/docx-page-numbering-pandoc.md",
