@@ -3,7 +3,9 @@ title: Knowledge Base
 tags: [index, readme]
 ---
 
-# Knowledge Base
+# agentic_kb
+
+Cross repo knowledge base that may be referenced by multiple repositories as git submodule.
 
 A centralized, flat-structure knowledge base with tag-based organization for cross-project reference.
 
@@ -79,7 +81,7 @@ This knowledge base can be used as a git submodule in any project:
 
 ```bash
 # Add as submodule to your project
-git submodule add https://github.com/your-username/kb.git path/to/kb
+git submodule add https://github.com/drguptavivek/agentic_kb.git path/to/kb
 
 # Update submodule to latest
 git submodule update --remote
