@@ -85,11 +85,15 @@ Each file has a **Related** section at the end with wikilinks to connected topic
 ---
 
 
-## Offline Vector Search
+## FAISS Vector Search (Optional - Semantic)
 
-Use the local, offline search tool when it helps retrieval:
+For semantic/conceptual queries when keyword search isn't sufficient.
 
-1. Add the dependencies to the parent project's environment (run in the parent repo):
+**Quick Reference**: See [QUICK-FAISS-WORKFLOW.md](QUICK-FAISS-WORKFLOW.md) for command cheat sheet.
+
+**Setup**:
+
+1. Add the dependencies to the parent project's environment:
 
 ```bash
 uv add faiss-cpu numpy sentence-transformers tqdm
@@ -98,24 +102,26 @@ uv add faiss-cpu numpy sentence-transformers tqdm
 2. Build the vector index (run from `agentic_kb/`):
 
 ```bash
+cd agentic_kb
 uv run python scripts/index_kb.py
+cd ..
 ```
 
-3. Query the index (run from `agentic_kb/`):
+3. Query the index:
 
 ```bash
-uv run python scripts/search.py "your query"
-uv run python scripts/search.py "page numbering in pandoc"
+cd agentic_kb
 uv run python scripts/search.py "page numbering in pandoc" --min-score 0.8
-
+cd ..
 ```
+
+**Performance**: 100-500ms (slower than Typesense, but finds semantically similar content)
 
 Notes:
 - The index is stored under `.kb_index/`.
-- The default model can be overridden with `--model /path/to/local/model`.
+- Use `--model` to override the default embedding model.
 - Filter by similarity with `--min-score` (default: `0.7`).
-- This tool must run fully offline; do not call external APIs.
-- Ensure `.kb_index/` is listed in `.gitignore`.
+- Fully offline; no external APIs.
 
 ### Setup Recommendations (Optional)
 
