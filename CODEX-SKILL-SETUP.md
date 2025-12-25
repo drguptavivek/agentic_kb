@@ -41,8 +41,12 @@ cp -R codex-skills/kb-search ~/.codex/skills/
 ### Option C: Install from a direct download
 
 ```bash
-# Download the packaged skill (replace URL)
-wget https://example.com/kb-search.skill -O ~/.codex/skills/kb-search.skill
+# Clean up existing
+rm -r  ~/.codex/skills/kb-search
+rm ~/.codex/skills/kb-search.skill
+
+# Download the packaged skill
+wget https://raw.githubusercontent.com/drguptavivek/agentic_kb/main/codex-skills/kb-search.skill   -O ~/.codex/skills/kb-search.skill
 
 # Unpack to folder-based install (some Codex builds prefer this)
 mkdir -p ~/.codex/skills/kb-search

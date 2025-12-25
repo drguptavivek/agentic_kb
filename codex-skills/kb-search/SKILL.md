@@ -9,10 +9,10 @@ description: Search and retrieve knowledge from agentic_kb knowledge base. Use w
 
 This skill enables searching and retrieving knowledge from the agentic_kb knowledge base, a structured repository of domain-specific knowledge organized into domains (Document Automation, Search, Security, Android, ODK Central).
 
-The skill supports three search methods:
-1. **Typesense** - Fast full-text search with typo tolerance (10-50ms, recommended first choice)
-2. **FAISS** - Semantic vector search for conceptual queries (100-500ms, fallback option)
-3. **ripgrep** - Exact pattern matching for strings and code (< 10ms)
+The skill supports three search methods, in this order:
+1. **Typesense** - Fast full-text search with typo tolerance (10-50ms, default when available)
+2. **FAISS** - Semantic vector search for conceptual queries (100-500ms, fallback if Typesense is not running)
+3. **ripgrep** - Exact pattern matching for strings and code (< 10ms, fallback for simple exact queries)
 
 ## First-Time Setup
 
@@ -78,6 +78,32 @@ git commit -m "Add: agentic_kb submodule (read-only)"
 ```
 
 **Note:** This won't allow pushing updates. If user wants to add knowledge later, they'll need to fork (Option 1).
+
+### Option 3: Clone from Source, Then Fork Later
+
+Use this when the user wants to get started quickly without forking yet, and migrate later.
+
+```bash
+# Clone directly from upstream
+git clone https://github.com/drguptavivek/agentic_kb.git
+```
+
+Later, the user can fork on GitHub and repoint the remote:
+
+```bash
+# Inside the cloned repo
+git remote set-url origin https://github.com/USERNAME/agentic_kb.git
+git push -u origin main
+```
+
+## Search Preference (Ask First)
+
+Before running searches, ask the user which search backend they prefer:
+1. **Typesense (Docker)** - Fastest, typo-tolerant
+2. **FAISS** - Semantic search, slower but good for conceptual queries
+3. **File search only (ripgrep)** - Exact matches, no index required
+
+If they choose Typesense, offer to set it up and index the KB. If they choose FAISS, offer to build the index. If they choose file search, use `rg` only.
 
 ### Option 3: Direct Repository Clone
 
