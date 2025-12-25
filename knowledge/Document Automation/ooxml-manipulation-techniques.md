@@ -368,4 +368,4 @@ if not has_pgnumtype:
 
 ## Related
 
-- [[DOCX Page Numbering with Pandoc]]
+- [[docx-page-numbering-pandoc]]

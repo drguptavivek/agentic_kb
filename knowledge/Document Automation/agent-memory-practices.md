@@ -68,11 +68,11 @@ making KB edits.
 
 ## References
 
-- [[Knowledge Conventions]]
+- [[KNOWLEDGE_CONVENTIONS]]
 
 ---
 
 ## Related
 
-- [[DOCX Page Numbering with Pandoc]]
-- [[OOXML Manipulation Techniques]]
+- [[docx-page-numbering-pandoc]]
+- [[ooxml-manipulation-techniques]]

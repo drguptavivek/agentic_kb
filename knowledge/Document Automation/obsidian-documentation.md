@@ -86,10 +86,10 @@ created: YYYY-MM-DD
 
 ## References
 
-- [[Knowledge Conventions]]
+- [[KNOWLEDGE_CONVENTIONS]]
 
 ---
 
 ## Related
 
-- [[Agent Memory Practices]]
+- [[agent-memory-practices]]

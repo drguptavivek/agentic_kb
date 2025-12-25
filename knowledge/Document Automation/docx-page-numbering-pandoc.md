@@ -241,5 +241,5 @@ subprocess.run(["python", "c_add_footers.py", "output.docx"])
 
 ## Related
 
-- [[OOXML Manipulation Techniques]]
-- [[Page Numbering Implementation]]
+- [[ooxml-manipulation-techniques]]
+- [[page-numbering-implementation]]

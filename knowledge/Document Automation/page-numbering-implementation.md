@@ -228,5 +228,5 @@ Move the decimal reset from SECTION_1.md to an earlier file.
 
 ## Related
 
-- [[DOCX Page Numbering with Pandoc]]
-- [[OOXML Manipulation Techniques]]
+- [[docx-page-numbering-pandoc]]
+- [[ooxml-manipulation-techniques]]

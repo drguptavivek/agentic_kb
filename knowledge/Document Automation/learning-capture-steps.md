@@ -40,11 +40,11 @@ consistently and linked to related topics.
 
 ## References
 
-- [[Knowledge Conventions]]
-- [[Agent Memory Practices]]
+- [[KNOWLEDGE_CONVENTIONS]]
+- [[agent-memory-practices]]
 
 ---
 
 ## Related
 
-- [[Obsidian Documentation Practices]]
+- [[obsidian-documentation]]

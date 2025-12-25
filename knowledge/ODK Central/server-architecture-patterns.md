@@ -380,7 +380,6 @@ exports.down = (db) =>
 ## Related
 
 - [[vg-customization-patterns]] - VG fork-specific patterns
-- [[testing-patterns]] - Testing conventions for ODK Central
 
 ## References
 
