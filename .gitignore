@@ -27,3 +27,6 @@ build/
 *.faiss
 cache/
 
+# Obsidian workspace (user-specific, don't commit)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
