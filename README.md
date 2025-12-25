@@ -155,7 +155,7 @@ Generate OS- and hardware-specific setup suggestions (no installs performed):
 uv run python scripts/recommend_setup.py
 ```
 
-## Typesense Full-Text Search (Optional)
+## Typesense Full-Text Search (HIGHLY RECOMEMNDED)
 
 For typo-tolerant, keyword-based search with faceting and filtering.
 
