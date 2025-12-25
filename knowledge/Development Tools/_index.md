@@ -93,3 +93,8 @@ updated: 2025-12-25
 - [[drizzle-kit-pull]]
 - [[drizzle-kit-up]]
 - [[drizzle-orm-goodies]]
+
+## Better Auth
+
+- [[better-auth-installation]]
+- [[better-auth-sveltekit-integration]]
