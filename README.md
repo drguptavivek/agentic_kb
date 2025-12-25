@@ -18,6 +18,30 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 
 **Integrate instructions for your AGENT** See [AGENTS.md](AGENTS.md)
 
+## 🤖 Claude Code Skill
+
+**Automate KB setup, search, and updates with the `kb-search` Claude skill!**
+
+The `kb-search.skill` enables Claude Code to automatically:
+- Set up the KB as a submodule (fork or read-only)
+- Search using Typesense → FAISS smart fallback
+- Keep KB synced with upstream updates
+- Document new knowledge with proper formatting
+
+**Quick Start**:
+```bash
+# 1. Install the skill
+cp kb-search.skill ~/.claude/skills/
+
+# 2. Ask Claude to set it up
+"Set up the agentic_kb knowledge base"
+
+# 3. Start searching
+"Search the KB for page numbering in Pandoc"
+```
+
+**📖 Full Guide**: [CLAUDE-SKILL-SETUP.md](CLAUDE-SKILL-SETUP.md)
+
 ---
 
 
