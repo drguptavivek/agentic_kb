@@ -1,0 +1,7 @@
+{
+  "remoteURL": "https://github.com/drguptavivek/agentic_kb.git",
+  "gitLocation": "",
+  "syncinterval": 60,
+  "isSyncOnLoad": true,
+  "checkStatusOnLoad": true
+}
