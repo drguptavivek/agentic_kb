@@ -15,9 +15,9 @@ A centralized, flat-structure knowledge base with tag-based organization for cro
 
 | File | Description | Tags |
 |------|-------------|------|
-| [docx-page-numbering-pandoc.md](docx-page-numbering-pandoc.md) | Complete guide to DOCX page numbering with Pandoc - problems, solutions, and best practices | `pandoc`, `docx`, `word`, `page-numbering`, `document-automation` |
-| [ooxml-manipulation-techniques.md](ooxml-manipulation-techniques.md) | OOXML structure, Python manipulation, unpacking/packing workflows | `ooxml`, `docx`, `word`, `xml`, `python`, `document-automation` |
-| [page-numbering-implementation.md](page-numbering-implementation.md) | Quick reference for page numbering implementation with code examples | `pandoc`, `docx`, `word`, `page-numbering`, `implementation`, `example`, `document-automation` |
+| [knowledge/docx-page-numbering-pandoc.md](knowledge/docx-page-numbering-pandoc.md) | Complete guide to DOCX page numbering with Pandoc - problems, solutions, and best practices | `pandoc`, `docx`, `word`, `page-numbering`, `document-automation` |
+| [knowledge/ooxml-manipulation-techniques.md](knowledge/ooxml-manipulation-techniques.md) | OOXML structure, Python manipulation, unpacking/packing workflows | `ooxml`, `docx`, `word`, `xml`, `python`, `document-automation` |
+| [knowledge/page-numbering-implementation.md](knowledge/page-numbering-implementation.md) | Quick reference for page numbering implementation with code examples | `pandoc`, `docx`, `word`, `page-numbering`, `implementation`, `example`, `document-automation` |
 
 ### Development Tools
 
@@ -39,10 +39,11 @@ A centralized, flat-structure knowledge base with tag-based organization for cro
 
 ## How This Knowledge Base is Organized
 
-1. **Flat file structure** - All `.md` files in root directory for easy access
-2. **Tag-based discovery** - YAML frontmatter tags enable cross-cutting organization
-3. **Domain categories** - Files grouped by domain above for topical browsing
-4. **Related content links** - Each file's `related` field links to related documents
+1. **knowledge/ folder** - All knowledge files stored in `knowledge/` subdirectory
+2. **Flat file structure** - All `.md` files in `knowledge/` directory for easy access
+3. **Tag-based discovery** - YAML frontmatter tags enable cross-cutting organization
+4. **Domain categories** - Files grouped by domain above for topical browsing
+5. **Related content links** - Each file's `related` field links to related documents
 
 ## File Format
 
@@ -65,11 +66,11 @@ Content...
 
 ### 1. Create the File
 
-Create a new markdown file with proper frontmatter:
+Create a new markdown file in the `knowledge/` directory with proper frontmatter:
 
 ```bash
 # Example: Adding a Git workflow guide
-cat > git-workflow.md << 'EOF'
+cat > knowledge/git-workflow.md << 'EOF'
 ---
 title: Git Workflow Guide
 tags: [git, version-control, workflow]
@@ -96,7 +97,7 @@ Add your file to the appropriate domain category. If a new domain is needed, cre
 
 | File | Description | Tags |
 |------|-------------|------|
-| [your-file.md](your-file.md) | Brief description | `tag1`, `tag2`, `tag3` |
+| [knowledge/your-file.md](knowledge/your-file.md) | Brief description | `tag1`, `tag2`, `tag3` |
 ```
 
 #### B. Update Tag Index (below)
@@ -104,14 +105,14 @@ Add your file to the appropriate domain category. If a new domain is needed, cre
 Add new tags to the tag index. Tags should be **lowercase** and use **hyphens** for multi-word tags.
 
 ```markdown
-| `your-new-tag` | [file1.md](file1.md), [file2.md](file2.md) |
+| `your-new-tag` | Domain | [file1.md](knowledge/file1.md), [file2.md](knowledge/file2.md) |
 ```
 
 ### 3. Commit and Push
 
 ```bash
 cd kb
-git add your-file.md README.md
+git add knowledge/your-file.md README.md
 git commit -m "Add: Your new knowledge file"
 git push
 ```
@@ -131,16 +132,16 @@ git submodule update --remote kb
 
 | Tag | Domain | Files |
 |-----|--------|-------|
-| `pandoc` | Document Automation | [docx-page-numbering-pandoc.md](docx-page-numbering-pandoc.md), [page-numbering-implementation.md](page-numbering-implementation.md) |
-| `docx` | Document Automation | [docx-page-numbering-pandoc.md](docx-page-numbering-pandoc.md), [ooxml-manipulation-techniques.md](ooxml-manipulation-techniques.md) |
-| `word` | Document Automation | [docx-page-numbering-pandoc.md](docx-page-numbering-pandoc.md), [ooxml-manipulation-techniques.md](ooxml-manipulation-techniques.md) |
-| `page-numbering` | Document Automation | [docx-page-numbering-pandoc.md](docx-page-numbering-pandoc.md), [page-numbering-implementation.md](page-numbering-implementation.md) |
-| `ooxml` | Document Automation | [ooxml-manipulation-techniques.md](ooxml-manipulation-techniques.md) |
-| `xml` | Document Automation | [ooxml-manipulation-techniques.md](ooxml-manipulation-techniques.md) |
-| `python` | Document Automation | [ooxml-manipulation-techniques.md](ooxml-manipulation-techniques.md) |
-| `document-automation` | Document Automation | [docx-page-numbering-pandoc.md](docx-page-numbering-pandoc.md), [ooxml-manipulation-techniques.md](ooxml-manipulation-techniques.md) |
-| `implementation` | Document Automation | [page-numbering-implementation.md](page-numbering-implementation.md) |
-| `example` | Document Automation | [page-numbering-implementation.md](page-numbering-implementation.md) |
+| `pandoc` | Document Automation | [docx-page-numbering-pandoc.md](knowledge/docx-page-numbering-pandoc.md), [page-numbering-implementation.md](knowledge/page-numbering-implementation.md) |
+| `docx` | Document Automation | [docx-page-numbering-pandoc.md](knowledge/docx-page-numbering-pandoc.md), [ooxml-manipulation-techniques.md](knowledge/ooxml-manipulation-techniques.md) |
+| `word` | Document Automation | [docx-page-numbering-pandoc.md](knowledge/docx-page-numbering-pandoc.md), [ooxml-manipulation-techniques.md](knowledge/ooxml-manipulation-techniques.md) |
+| `page-numbering` | Document Automation | [docx-page-numbering-pandoc.md](knowledge/docx-page-numbering-pandoc.md), [page-numbering-implementation.md](knowledge/page-numbering-implementation.md) |
+| `ooxml` | Document Automation | [ooxml-manipulation-techniques.md](knowledge/ooxml-manipulation-techniques.md) |
+| `xml` | Document Automation | [ooxml-manipulation-techniques.md](knowledge/ooxml-manipulation-techniques.md) |
+| `python` | Document Automation | [ooxml-manipulation-techniques.md](knowledge/ooxml-manipulation-techniques.md) |
+| `document-automation` | Document Automation | [docx-page-numbering-pandoc.md](knowledge/docx-page-numbering-pandoc.md), [ooxml-manipulation-techniques.md](knowledge/ooxml-manipulation-techniques.md) |
+| `implementation` | Document Automation | [page-numbering-implementation.md](knowledge/page-numbering-implementation.md) |
+| `example` | Document Automation | [page-numbering-implementation.md](knowledge/page-numbering-implementation.md) |
 
 ---
 
@@ -155,12 +156,12 @@ Browse the **Knowledge by Domain** section above for topic-based discovery.
 Search for files with a specific tag:
 
 ```bash
-grep -l "tags:.*your-tag" *.md
+grep -l "tags:.*your-tag" knowledge/*.md
 ```
 
 Or search within files:
 ```bash
-grep -r "your-tag" . --include="*.md"
+grep -r "your-tag" knowledge/ --include="*.md"
 ```
 
 ### By Relationships
@@ -207,7 +208,7 @@ git submodule update
 Reference files relative to the submodule path:
 
 ```
-See: kb/docx-page-numbering-pandoc.md for page numbering details
+See: kb/knowledge/docx-page-numbering-pandoc.md for page numbering details
 ```
 
 ---
@@ -251,6 +252,18 @@ Links to external documentation, related files, etc.
 
 ## Maintenance Guidelines
 
+### Directory Structure
+
+```
+kb/
+├── README.md           # This file - index and guide
+├── LICENSE            # License file
+└── knowledge/         # All knowledge files go here
+    ├── topic1.md
+    ├── topic2.md
+    └── ...
+```
+
 ### Tag Conventions
 
 - Use **lowercase** tags
@@ -269,6 +282,7 @@ Links to external documentation, related files, etc.
 - Use **kebab-case**: `git-workflow.md`, `api-integration.md`
 - Be **descriptive**: `docx-page-numbering-pandoc.md` (not `docx.md`)
 - Avoid numbers unless part of a series: `docker-part-1.md`
+- **Always save in `knowledge/` directory**
 
 ---
 
