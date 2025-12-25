@@ -404,6 +404,146 @@ Use prefixes:
 
 ---
 
+## Using in Projects (Submodule Workflow)
+
+When this knowledge base is used as a git submodule in projects, follow this workflow:
+
+### Updating Knowledge from Personal Vault
+
+If you edit `~/kb` (your personal Obsidian vault), push changes first:
+
+```bash
+# In ~/kb (personal vault)
+cd ~/kb
+git add .
+git commit -m "Update: Your changes"
+git push
+```
+
+Then update in project:
+```bash
+# In project directory (e.g., SecPolicy)
+cd /path/to/project
+git submodule update --remote kb
+git add kb
+git commit -m "Update kb submodule: Your changes summary"
+git push
+```
+
+### Updating Knowledge Directly in Project
+
+If you edit files in the project's `kb/` folder:
+
+```bash
+# In project directory
+cd kb
+git add .
+git commit -m "Update: Your changes"
+git push
+
+# Go back to project root
+cd ..
+git add kb
+git commit -m "Update kb submodule: Your changes summary"
+git push
+```
+
+### Syncing Across Multiple Projects
+
+If you use this knowledge base in multiple projects, update all projects after changes:
+
+```bash
+# In each project directory
+cd /path/to/project1
+git submodule update --remote kb
+git add kb
+git commit -m "Sync kb submodule"
+git push
+
+# Repeat for project2, project3, etc.
+```
+
+### Ensuring Consistency Across Projects
+
+To ensure all projects using this submodule stay synchronized:
+
+1. **Always pull before editing**:
+   ```bash
+   cd ~/kb  # or project/kb
+   git pull origin main
+   ```
+
+2. **Push to central source first** - Always push to `https://github.com/drguptavivek/agentic_kb.git` before updating projects
+
+3. **Update all projects** after changes:
+   ```bash
+   # Update all projects using this submodule
+   for project in ~/project1 ~/project2 ~/project3; do
+     cd "$project"
+     git submodule update --remote kb
+     git add kb
+     git commit -m "Sync kb submodule"
+     git push
+   done
+   ```
+
+4. **Check submodule status**:
+   ```bash
+   # In any project using kb
+   git submodule status
+   # Should show: 8844785... kb (8844785) [or latest commit]
+   ```
+
+### Workflow Diagram
+
+```
+┌─────────────┐
+│  ~/kb       │  Edit in Obsidian (personal vault)
+│  (Personal) │
+└──────┬──────┘
+       │ git push
+       ↓
+┌─────────────────────┐
+│  agentic_kb         │  Central source of truth
+│  (GitHub repo)      │  https://github.com/drguptavivek/agentic_kb
+└──────┬──────────────┘
+       │ git submodule update --remote kb
+       ↓
+┌─────────────────────────────────────┐
+│  Project1/kb  Project2/kb  Project3/kb  │  Projects using submodule
+└─────────────────────────────────────┘
+```
+
+### Troubleshooting Submodule Issues
+
+#### Submodule shows detached HEAD
+```bash
+cd kb
+git checkout main
+cd ..
+git add kb
+git commit -m "Fix: Reattach kb submodule to main branch"
+```
+
+#### Submodule not updating
+```bash
+# Force refresh
+git submodule deinit -f kb
+rm -rf .git/modules/kb
+git submodule update --init kb
+```
+
+#### Different commits in different projects
+```bash
+# All projects should show same commit hash
+git submodule status
+
+# If different, update to latest
+git submodule update --remote kb
+```
+
+---
+
 ## Resources
 
 - [Obsidian Documentation](https://help.obsidian.md/)
