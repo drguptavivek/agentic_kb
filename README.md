@@ -30,6 +30,10 @@ git submodule add https://github.com/drguptavivek/agentic_kb.git agentic_kb
 git submodule update --init --recursive
 ```
 
+**For Coding Agents**: After adding as a submodule, integrate the KB's agent instructions into your parent project's `CLAUDE.md` file.
+- Quick start: Copy template from [PARENT_PROJECT_TEMPLATE.md](PARENT_PROJECT_TEMPLATE.md)
+- Full guide: [GIT_WORKFLOWS.md](GIT_WORKFLOWS.md#integrating-agent-instructions-into-parent-projects)
+
 ### Search with ripgrep
 
 ```bash
@@ -163,6 +167,7 @@ agentic_kb/
 ├── INSTRUCTIONS.md     # How to add/update knowledge
 ├── AGENTS.md           # Agent instructions (direct and submodule paths)
 ├── CLAUDE.md           # Symlink to AGENTS.md for Claude Code integration
+├── PARENT_PROJECT_TEMPLATE.md  # Template for integrating KB into parent projects
 ├── KNOWLEDGE_CONVENTIONS.md  # Knowledge organization and maintenance rules
 ├── GIT_WORKFLOWS.md    # Git and submodule workflows
 ├── LICENSE            # License file

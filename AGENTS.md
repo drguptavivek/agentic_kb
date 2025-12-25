@@ -8,6 +8,8 @@ tags:
 
 This is the single source of truth for agent behavior when using this KB.
 
+**For Parent Projects**: If this KB is used as a submodule, the parent project's `CLAUDE.md` should reference these instructions. See [GIT_WORKFLOWS.md](GIT_WORKFLOWS.md#integrating-agent-instructions-into-parent-projects) for integration template.
+
 ## Scope and Sources
 
 - Direct repo path: `knowledge/`

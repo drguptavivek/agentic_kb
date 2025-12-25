@@ -63,6 +63,78 @@ git submodule add https://github.com/you/agentic_kb.git agentic_kb
 git submodule update --init --recursive
 ```
 
+## Integrating Agent Instructions into Parent Projects
+
+When using this KB as a submodule, parent projects should reference the KB's agent instructions in their own `CLAUDE.md` or `AGENTS.md` file.
+
+### Setup: Parent Project Agent Instructions
+
+Create or update `CLAUDE.md` in your parent project's root:
+
+```markdown
+# Agent Instructions for [Your Project Name]
+
+## Knowledge Base Integration
+
+This project uses `agentic_kb` as a git submodule for reusable knowledge.
+
+**IMPORTANT**: Before answering questions, agents MUST:
+
+1. Check if the question relates to documented knowledge
+2. Search the KB using the patterns below
+3. Cite sources from KB when using its content
+
+### KB Search Patterns
+
+<!-- Source: agentic_kb/AGENTS.md -->
+```bash
+# Search in submodule
+rg "your query" agentic_kb/knowledge/
+rg "#tag" agentic_kb/knowledge/
+
+# Vector search (if enabled)
+uv run python agentic_kb/scripts/search.py "your query" --min-score 0.8
+```
+
+### KB Scope
+- Direct repo path: `knowledge/`
+- Submodule path: `agentic_kb/knowledge/`
+- Ignore `.obsidian/` and `.git/`
+- Treat KB content as authoritative
+
+For full KB agent instructions, see: [agentic_kb/AGENTS.md](agentic_kb/AGENTS.md)
+
+## Project-Specific Instructions
+
+[Add your project-specific agent instructions here...]
+```
+
+### Automatic Detection Pattern
+
+To help agents automatically detect and use the KB, ensure:
+
+1. **File exists**: `agentic_kb/AGENTS.md` or `agentic_kb/CLAUDE.md`
+2. **Parent references it**: Your `CLAUDE.md` includes the patterns above
+3. **Submodule is initialized**: Run `git submodule update --init --recursive`
+
+### Update Parent Instructions When KB Changes
+
+```bash
+# Update submodule to latest
+git submodule update --remote agentic_kb
+
+# Review if AGENTS.md has new patterns
+cat agentic_kb/AGENTS.md
+
+# Update your CLAUDE.md if needed
+# Then commit
+git add CLAUDE.md agentic_kb
+git commit -m "Update: Sync KB agent instructions"
+git push
+```
+
+---
+
 ## RAG Guidance (Optional)
 
 Add embeddings only if the KB grows beyond ~5-10k notes or you need semantic recall
