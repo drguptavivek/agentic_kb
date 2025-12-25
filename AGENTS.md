@@ -41,3 +41,13 @@ Agents must document new, reusable knowledge learned during tasks.
 If a KB update is needed based on new findings, ask for user confirmation before making edits.
 Follow `knowledge/Document Automation/learning-capture-steps.md`.
 Follow `KNOWLEDGE_CONVENTIONS.md`.
+
+## Obsidian-Specific Requirements
+
+When generating knowledge notes, include:
+
+- YAML frontmatter with tags and created date
+- Explicit headings that match likely queries
+- A `Related` section with `[[wikilinks]]`
+
+Follow `KNOWLEDGE_CONVENTIONS.md` for the full Obsidian usage rules.

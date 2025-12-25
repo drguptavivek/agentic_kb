@@ -23,6 +23,9 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 | [[DOCX Page Numbering with Pandoc]] | Complete guide to DOCX page numbering with Pandoc - problems, solutions, and best practices | `#pandoc`, `#docx`, `#word`, `#page-numbering` |
 | [[OOXML Manipulation Techniques]] | OOXML structure, Python manipulation, unpacking/packing workflows | `#ooxml`, `#docx`, `#word`, `#xml`, `#python` |
 | [[Page Numbering Implementation]] | Quick reference for page numbering implementation with code examples | `#pandoc`, `#docx`, `#word`, `#page-numbering`, `#implementation` |
+| [[Agent Memory Practices]] | How agents capture reusable knowledge during tasks | `#agents`, `#knowledge-base`, `#documentation`, `#workflow` |
+| [[Obsidian Documentation Practices]] | Documentation structure and retrieval-friendly note patterns | `#obsidian`, `#documentation`, `#knowledge-base`, `#workflow` |
+| [[Learning Capture Steps]] | Step-by-step process for documenting new learnings | `#knowledge-base`, `#documentation`, `#workflow`, `#agents` |
 
 ### Development Tools
 
@@ -47,20 +50,15 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 ## Directory Structure
 
 ```
-kb/
+agentic_kb/
 ├── README.md           # This file - knowledge index
 ├── INSTRUCTIONS.md     # How to add/update knowledge
+├── AGENTS.md           # Agent instructions (direct and submodule paths)
+├── KNOWLEDGE_CONVENTIONS.md  # Knowledge organization and maintenance rules
+├── GIT_WORKFLOWS.md    # Git and submodule workflows
 ├── LICENSE            # License file
 ├── .obsidian/         # Obsidian configuration (graph view, settings)
 └── knowledge/         # All knowledge files organized by domain
-    ├── Document Automation/
-    │   ├── DOCX Page Numbering with Pandoc.md
-    │   ├── OOXML Manipulation Techniques.md
-    │   └── Page Numbering Implementation.md
-    ├── Development Tools/
-    ├── APIs & Integrations/
-    ├── Security/
-    └── DevOps & CI/CD/
 ```
 
 ---
@@ -77,8 +75,8 @@ All files use `#tag` format in content. Search by tag:
 
 ```bash
 # Search in Obsidian: Click on any #tag
-# Or use grep:
-grep -r "#pandoc" knowledge/
+# Or use rg:
+rg "#pandoc" knowledge/
 ```
 
 ### By Graph View
@@ -105,10 +103,10 @@ Each file has a **Related** section at the end with wikilinks to connected topic
 
 ```bash
 # Add to your project
-git submodule add https://github.com/drguptavivek/agentic_kb.git kb
+git submodule add https://github.com/drguptavivek/agentic_kb.git agentic_kb
 
 # Update to latest
-git submodule update --remote kb
+git submodule update --remote agentic_kb
 ```
 
 ### As Markdown Files
@@ -117,66 +115,10 @@ All files are standard markdown with YAML frontmatter. Read with any markdown vi
 
 ---
 
-## File Format
+## Conventions
 
-### Obsidian Frontmatter
-
-```yaml
----
-tags:
-  - tag1
-  - tag2
-  - tag3
-created: YYYY-MM-DD
----
-
-# Title
-
-Content...
-
-## Related
-
-- [[Other File]]
-- [[Another File]]
-```
-
-### Wikilinks
-
-Use `[[filename]]` to link to other knowledge files:
-
-```markdown
-See [[OOXML Manipulation Techniques]] for XML details.
-```
-
-### Tags
-
-Use `#tag` anywhere in content:
-
-```markdown
-This covers #pandoc and #docx file manipulation.
-```
-
----
-
-## Obsidian Features Enabled
-
-- **Folder Structure**: Knowledge organized by domain in `knowledge/`
-- **Wikilinks**: Files linked with `[[filename]]` syntax
-- **Tags**: YAML `tags:` field plus inline `#tag` support
-- **Graph View**: Visualize connections via `.obsidian/graph.json`
-- **Live Preview**: Real-time markdown rendering
-- **Backlinks**: See which files link to current file
-
----
-
-## Adding New Knowledge
-
-1. Create file in appropriate domain folder
-2. Use Obsidian frontmatter format
-3. Link to related files with `[[wikilinks]]`
-4. Add relevant `tags:`
-
-See [INSTRUCTIONS.md](INSTRUCTIONS.md) for complete guide.
+See [KNOWLEDGE_CONVENTIONS.md](KNOWLEDGE_CONVENTIONS.md) for file format,
+linking rules, and how to add or update knowledge.
 
 ---
 
