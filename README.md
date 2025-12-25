@@ -9,6 +9,10 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 
 A centralized, flat-structure knowledge base with tag-based organization for cross-project reference.
 
+**Need to add or update knowledge?** See [INSTRUCTIONS.md](INSTRUCTIONS.md)
+
+---
+
 ## Knowledge by Domain
 
 ### Document Automation
@@ -34,97 +38,6 @@ A centralized, flat-structure knowledge base with tag-based organization for cro
 ### DevOps & CI/CD
 
 *Coming soon - Add your knowledge here*
-
----
-
-## How This Knowledge Base is Organized
-
-1. **knowledge/ folder** - All knowledge files stored in `knowledge/` subdirectory
-2. **Flat file structure** - All `.md` files in `knowledge/` directory for easy access
-3. **Tag-based discovery** - YAML frontmatter tags enable cross-cutting organization
-4. **Domain categories** - Files grouped by domain above for topical browsing
-5. **Related content links** - Each file's `related` field links to related documents
-
-## File Format
-
-All knowledge files use this frontmatter format:
-
-```yaml
----
-title: Document Title
-tags: [tag1, tag2, tag3]
-created: YYYY-MM-DD
-related: [file1.md, file2.md]
----
-
-# Your Title Here
-
-Content...
-```
-
-## Adding New Knowledge
-
-### 1. Create the File
-
-Create a new markdown file in the `knowledge/` directory with proper frontmatter:
-
-```bash
-# Example: Adding a Git workflow guide
-cat > knowledge/git-workflow.md << 'EOF'
----
-title: Git Workflow Guide
-tags: [git, version-control, workflow]
-created: 2025-12-25
-related: []
----
-
-# Git Workflow Guide
-
-Content goes here...
-EOF
-```
-
-### 2. Update This README
-
-**IMPORTANT**: When adding new files, update both sections below:
-
-#### A. Add to Domain Section (above)
-
-Add your file to the appropriate domain category. If a new domain is needed, create a new section header.
-
-```markdown
-### Your New Domain Name
-
-| File | Description | Tags |
-|------|-------------|------|
-| [knowledge/your-file.md](knowledge/your-file.md) | Brief description | `tag1`, `tag2`, `tag3` |
-```
-
-#### B. Update Tag Index (below)
-
-Add new tags to the tag index. Tags should be **lowercase** and use **hyphens** for multi-word tags.
-
-```markdown
-| `your-new-tag` | Domain | [file1.md](knowledge/file1.md), [file2.md](knowledge/file2.md) |
-```
-
-### 3. Commit and Push
-
-```bash
-cd kb
-git add knowledge/your-file.md README.md
-git commit -m "Add: Your new knowledge file"
-git push
-```
-
-### 4. Update Dependent Projects
-
-Projects using this submodule should update:
-
-```bash
-# In projects using this submodule
-git submodule update --remote kb
-```
 
 ---
 
@@ -170,40 +83,27 @@ Each file has a `related` field in frontmatter. Follow these links to discover r
 
 ---
 
-## Git Submodule Usage
+## Using This Knowledge Base in Your Project
 
-### Add to Your Project
+### Add as Submodule
 
 ```bash
-# Add as submodule to your project
 git submodule add https://github.com/drguptavivek/agentic_kb.git kb
-
-# Or specify a custom path
-git submodule add https://github.com/drguptavivek/agentic_kb.git path/to/kb
 ```
 
 ### Update Submodule
 
 ```bash
-# Update to latest version
 git submodule update --remote kb
-
-# Update all submodules
-git submodule update --remote
 ```
 
 ### Clone with Submodules
 
 ```bash
-# Clone repository and its submodules
 git clone --recursive https://github.com/your-username/project.git
-
-# Or initialize submodules after cloning
-git submodule init
-git submodule update
 ```
 
-### Referencing from Other Projects
+### Reference Files
 
 Reference files relative to the submodule path:
 
@@ -213,76 +113,37 @@ See: kb/knowledge/docx-page-numbering-pandoc.md for page numbering details
 
 ---
 
-## File Template
-
-Copy this template for new knowledge files:
-
-```yaml
----
-title: Your Knowledge Title
-tags: [tag1, tag2, tag3]
-created: YYYY-MM-DD
-related: [related-file1.md, related-file2.md]
----
-
-# Your Knowledge Title
-
-## Overview
-
-Brief description of what this knowledge covers.
-
-## Problem/Context
-
-What problem does this solve? What context is needed?
-
-## Solution
-
-Your solution content here...
-
-## Examples
-
-Code examples, commands, or usage patterns...
-
-## References
-
-Links to external documentation, related files, etc.
-```
-
----
-
-## Maintenance Guidelines
-
-### Directory Structure
+## Directory Structure
 
 ```
 kb/
-├── README.md           # This file - index and guide
+├── README.md           # This file - knowledge index
+├── INSTRUCTIONS.md     # How to add/update knowledge
 ├── LICENSE            # License file
-└── knowledge/         # All knowledge files go here
+└── knowledge/         # All knowledge files
     ├── topic1.md
     ├── topic2.md
     └── ...
 ```
 
-### Tag Conventions
+---
 
-- Use **lowercase** tags
-- Use **hyphens** for multi-word tags: `document-automation`, `page-numbering`
-- Use **descriptive tags** that will be useful for searching
-- Include both **specific** and **general** tags: e.g., `ooxml` + `xml` + `document-automation`
+## File Format
 
-### Domain Organization
+All knowledge files use this frontmatter format:
 
-- Add new domain sections when a distinct topic area emerges
-- Keep domain descriptions concise (one line per file)
-- Update the Tag Index when adding new tags
+```yaml
+---
+title: Document Title
+tags: [tag1, tag2, tag3]
+created: YYYY-MM-DD
+related: [file1.md, file2.md]
+---
 
-### File Naming
+# Your Title Here
 
-- Use **kebab-case**: `git-workflow.md`, `api-integration.md`
-- Be **descriptive**: `docx-page-numbering-pandoc.md` (not `docx.md`)
-- Avoid numbers unless part of a series: `docker-part-1.md`
-- **Always save in `knowledge/` directory**
+Content...
+```
 
 ---
 
