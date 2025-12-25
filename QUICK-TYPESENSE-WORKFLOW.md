@@ -1,9 +1,11 @@
 # Quick Typesense Workflow
 
+**For submodule usage** (most common). Run from parent project root where `agentic_kb/` is the submodule directory.
+
 ## Setup (One-Time)
 
 ```bash
-# Install dependency
+# Install dependency in parent project
 uv add typesense
 
 # Create Docker volume
@@ -19,29 +21,29 @@ docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
 
 ```bash
 # Build search index (run after adding/updating knowledge files)
-uv run python scripts/index_typesense.py
+uv run python agentic_kb/scripts/index_typesense.py
 ```
 
 ## Search
 
 ```bash
 # Basic search
-uv run python scripts/search_typesense.py "your query"
+uv run python agentic_kb/scripts/search_typesense.py "your query"
 
 # Limit results
-uv run python scripts/search_typesense.py "page numbering" --k 10
+uv run python agentic_kb/scripts/search_typesense.py "page numbering" --k 10
 
 # Filter by single tag
-uv run python scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
+uv run python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
 
 # Filter by multiple tags (OR condition)
-uv run python scripts/search_typesense.py "page" --filter "tags:=[pandoc,docx]"
+uv run python agentic_kb/scripts/search_typesense.py "page" --filter "tags:=[pandoc,docx]"
 
 # Search specific fields only
-uv run python scripts/search_typesense.py "pandoc" --query-by "heading,path"
+uv run python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
 
 # Combine filters
-uv run python scripts/search_typesense.py "page" --filter "tags:pandoc && path:*Document*"
+uv run python agentic_kb/scripts/search_typesense.py "page" --filter "tags:pandoc && path:*Document*"
 ```
 
 ## Manage Docker
@@ -73,13 +75,25 @@ docker volume rm typesense-agentic-kb-data
 
 ```bash
 # Rebuild index if search returns no results
-uv run python scripts/index_typesense.py
+uv run python agentic_kb/scripts/index_typesense.py
 
 # Check Typesense server status
 curl http://localhost:8108/health
 
 # View Docker logs for errors
 docker logs typesense --tail 50
+```
+
+## Standalone Usage (If Not Using as Submodule)
+
+If running directly in the KB repo (not as submodule), omit the `agentic_kb/` prefix:
+
+```bash
+# Index
+uv run python scripts/index_typesense.py
+
+# Search
+uv run python scripts/search_typesense.py "your query"
 ```
 
 ## Performance
