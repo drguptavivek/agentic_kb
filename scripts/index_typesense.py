@@ -37,7 +37,7 @@ def strip_frontmatter(text: str) -> tuple[str, dict]:
     frontmatter_raw = parts[1].strip()
     content = parts[2].lstrip("\n")
 
-    # Basic YAML parsing for tags and created date
+    # Parse YAML frontmatter fields
     metadata = {}
     lines = frontmatter_raw.splitlines()
     i = 0
@@ -66,6 +66,21 @@ def strip_frontmatter(text: str) -> tuple[str, dict]:
                 metadata["tags"] = tags
         elif line.startswith("created:"):
             metadata["created"] = line.replace("created:", "").strip()
+            i += 1
+        elif line.startswith("updated:"):
+            metadata["updated"] = line.replace("updated:", "").strip()
+            i += 1
+        elif line.startswith("title:"):
+            metadata["title"] = line.replace("title:", "").strip()
+            i += 1
+        elif line.startswith("type:"):
+            metadata["type"] = line.replace("type:", "").strip()
+            i += 1
+        elif line.startswith("domain:"):
+            metadata["domain"] = line.replace("domain:", "").strip()
+            i += 1
+        elif line.startswith("status:"):
+            metadata["status"] = line.replace("status:", "").strip()
             i += 1
         else:
             i += 1
@@ -102,6 +117,11 @@ def split_into_chunks(path: Path) -> List[dict]:
                 "heading": current_heading,
                 "tags": metadata.get("tags", []),
                 "created": metadata.get("created", ""),
+                "updated": metadata.get("updated", ""),
+                "title": metadata.get("title", ""),
+                "type": metadata.get("type", ""),
+                "domain": metadata.get("domain", ""),
+                "status": metadata.get("status", ""),
             })
 
     for line in lines:
@@ -139,6 +159,11 @@ def create_schema(client: typesense.Client, collection_name: str) -> None:
             {'name': 'text', 'type': 'string', 'facet': False},
             {'name': 'tags', 'type': 'string[]', 'facet': True, 'optional': True},
             {'name': 'created', 'type': 'string', 'facet': False, 'optional': True},
+            {'name': 'updated', 'type': 'string', 'facet': False, 'optional': True},
+            {'name': 'title', 'type': 'string', 'facet': False, 'optional': True},
+            {'name': 'type', 'type': 'string', 'facet': True, 'optional': True},
+            {'name': 'domain', 'type': 'string', 'facet': True, 'optional': True},
+            {'name': 'status', 'type': 'string', 'facet': True, 'optional': True},
         ],
         'default_sorting_field': ''
     }

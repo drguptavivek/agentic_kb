@@ -71,7 +71,17 @@ def print_results(results: List[dict]) -> None:
 
         print(f"{i}. {doc['path']} -> {doc['heading']} (score: {score})")
 
-        # Show tags if available
+        # Show metadata if available
+        metadata_parts = []
+        if doc.get('domain'):
+            metadata_parts.append(f"Domain: {doc['domain']}")
+        if doc.get('type'):
+            metadata_parts.append(f"Type: {doc['type']}")
+        if doc.get('status'):
+            metadata_parts.append(f"Status: {doc['status']}")
+        if metadata_parts:
+            print(f"   {' | '.join(metadata_parts)}")
+
         if doc.get('tags'):
             print(f"   Tags: {', '.join(doc['tags'])}")
 

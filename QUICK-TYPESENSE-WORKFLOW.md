@@ -33,43 +33,28 @@ uv run python agentic_kb/scripts/search_typesense.py "your query"
 # Limit results
 uv run python agentic_kb/scripts/search_typesense.py "page numbering" --k 10
 
-# Filter by single tag
+# Filter by tag
 uv run python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
 
-# Filter by multiple tags (OR condition)
+# Filter by multiple tags (OR)
 uv run python agentic_kb/scripts/search_typesense.py "page" --filter "tags:=[pandoc,docx]"
 
-# Search specific fields only
+# Filter by domain
+uv run python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+
+# Filter by type (howto, reference, checklist, policy, note)
+uv run python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+
+# Filter by status (draft, approved, deprecated)
+uv run python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+
+# Combine filters (AND)
+uv run python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search && type:howto"
+
+# Search specific fields
 uv run python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
-
-# Combine filters
-uv run python agentic_kb/scripts/search_typesense.py "page" --filter "tags:pandoc && path:*Document*"
 ```
 
-## Manage Docker
-
-```bash
-# Check if Typesense is running
-docker ps | grep typesense
-
-# View logs
-docker logs typesense
-
-# Stop server
-docker stop typesense
-
-# Start server (after stop)
-docker start typesense
-
-# Restart server
-docker restart typesense
-
-# Remove container (keeps data in volume)
-docker rm typesense
-
-# Remove volume (deletes all indexed data!)
-docker volume rm typesense-agentic-kb-data
-```
 
 ## Troubleshooting
 
@@ -101,3 +86,29 @@ uv run python scripts/search_typesense.py "your query"
 - **Search speed**: 10-50ms (5-10x faster than FAISS)
 - **Index time**: 1-2 minutes for ~500 chunks
 - **Returns**: Full chunk content (no need to read files for simple queries!)
+
+
+## Manage Docker
+
+```bash
+# Check if Typesense is running
+docker ps | grep typesense
+
+# View logs
+docker logs typesense
+
+# Stop server
+docker stop typesense
+
+# Start server (after stop)
+docker start typesense
+
+# Restart server
+docker restart typesense
+
+# Remove container (keeps data in volume)
+docker rm typesense
+
+# Remove volume (deletes all indexed data!)
+docker volume rm typesense-agentic-kb-data
+```
