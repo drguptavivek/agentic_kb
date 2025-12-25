@@ -125,6 +125,55 @@ Generate OS- and hardware-specific setup suggestions (no installs performed):
 uv run python scripts/recommend_setup.py
 ```
 
+## Typesense Full-Text Search (Optional)
+
+For typo-tolerant, keyword-based search with faceting and filtering.
+
+**Quick Reference**: See [QUICK-TYPESENSE-WORKFLOW.md](QUICK-TYPESENSE-WORKFLOW.md) for command cheat sheet.
+
+**Setup**: See [[typesense-integration]] for complete setup guide.
+
+**Quick Start**:
+
+1. Install dependencies and start Typesense server (Docker Compose recommended):
+
+```bash
+uv add typesense
+
+# Create docker-compose.yml with Typesense config (see full guide)
+docker-compose up -d
+
+# Or use Docker directly with named volume:
+export TYPESENSE_API_KEY=xyz
+docker volume create typesense-agentic-kb-data
+docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data  typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
+
+```
+
+2. Build the index:
+
+```bash
+uv run python scripts/index_typesense.py
+# from Submodule
+uv run python agentic_kb/scripts/index_typesense.py
+```
+
+3. Search:
+
+```bash
+uv run python scripts/search_typesense.py "page numbering pandoc"
+uv run python scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
+# from Submodule
+uv run python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
+```
+
+**When to Use**:
+- Fast keyword searches with typo tolerance
+- Filtering by tags or file paths
+- Interactive search UIs
+
+**Comparison**: See [[search-backends]] for detailed comparison of ripgrep vs FAISS vs Typesense.
+
 
 ## Browse Knowledge by Domain
 
@@ -138,6 +187,16 @@ uv run python scripts/recommend_setup.py
 | [[agent-memory-practices]] | How agents capture reusable knowledge during tasks | `#agents`, `#knowledge-base`, `#documentation`, `#workflow` |
 | [[obsidian-documentation]] | Documentation structure and retrieval-friendly note patterns | `#obsidian`, `#documentation`, `#knowledge-base`, `#workflow` |
 | [[learning-capture-steps]] | Step-by-step process for documenting new learnings | `#knowledge-base`, `#documentation`, `#workflow`, `#agents` |
+| [[typesense-integration]] | Typesense integration for typo-tolerant full-text search | `#typesense`, `#search`, `#full-text`, `#indexing` |
+
+### Search
+
+| File | Description | Tags |
+|------|-------------|------|
+| [[search-backends]] | Comparison of FAISS, Typesense, and ripgrep search backends | `#search`, `#faiss`, `#typesense`, `#vector-search`, `#full-text` |
+| [[agent-retrieval-workflow]] | How agents should use search results (search → read → answer pattern) | `#agents`, `#workflow`, `#retrieval`, `#search`, `#rag` |
+| [[typesense-v30-deprecation-warnings]] | Fix for Typesense v30+ deprecation warnings | `#typesense`, `#python`, `#deprecation`, `#troubleshooting` |
+| [[typesense-yaml-frontmatter-parsing]] | Fix for YAML frontmatter tag parsing in Typesense indexing | `#typesense`, `#yaml`, `#frontmatter`, `#parsing`, `#python` |
 
 ### Android Development
 

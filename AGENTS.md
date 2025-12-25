@@ -39,10 +39,12 @@ This ensures:
 ## Required Workflow
 
 1. Search the KB before answering (use `rg` under the correct KB path).
-2. Open the most relevant file(s).
+2. Open the most relevant file(s) using the Read tool.
 3. Answer using KB content, preferring exact steps or checklists.
 4. Cite sources using: `<file path> -> <heading>`.
 5. If missing, say: "Not found in KB" and suggest where to add it.
+
+**IMPORTANT**: Never answer from search snippets alone. Always read the full files first. See `knowledge/Search/agent-retrieval-workflow.md` for detailed workflow.
 
 ## Deterministic Search Pattern
 
