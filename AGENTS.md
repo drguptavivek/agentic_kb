@@ -58,11 +58,57 @@ rg "pandoc" agentic_kb/knowledge/
 rg "page number" agentic_kb/knowledge/
 ```
 
-## Offline Vector Search
+## Typesense Full-Text Search (Recommended)
 
-Use the local, offline search tool when it helps retrieval:
+Fast, typo-tolerant search with faceted filtering. **5-10x faster than vector search.**
 
-1. Add the dependencies to the parent project's environment (run in the parent repo):
+### Setup (One-Time)
+
+1. Install dependency and start Typesense server:
+
+```bash
+uv add typesense
+export TYPESENSE_API_KEY=xyz
+docker volume create typesense-agentic-kb-data
+docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
+  typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
+```
+
+2. Build the index (run from parent project root):
+
+```bash
+uv run python agentic_kb/scripts/index_typesense.py
+```
+
+### Search
+
+```bash
+# Basic search
+uv run python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
+
+# Filter by domain
+uv run python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+
+# Filter by type (howto, reference, checklist, policy, note)
+uv run python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+
+# Filter by status (draft, approved, deprecated)
+uv run python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+
+# Combine filters
+uv run python agentic_kb/scripts/search_typesense.py "search" \
+  --filter "domain:Search && type:howto && status:approved"
+```
+
+**Quick Reference**: See `agentic_kb/QUICK-TYPESENSE-WORKFLOW.md`
+
+**Performance**: 10-50ms (vs FAISS 100-500ms). Returns full chunk content - often no need to read files!
+
+## FAISS Vector Search (Semantic)
+
+Use for semantic/conceptual queries when Typesense doesn't find relevant results:
+
+1. Add the dependencies to the parent project's environment:
 
 ```bash
 uv add faiss-cpu numpy sentence-transformers tqdm
@@ -78,17 +124,14 @@ uv run python scripts/index_kb.py
 
 ```bash
 uv run python scripts/search.py "your query"
-uv run python scripts/search.py "page numbering in pandoc"
 uv run python scripts/search.py "page numbering in pandoc" --min-score 0.8
-
 ```
 
 Notes:
 - The index is stored under `.kb_index/`.
-- The default model can be overridden with `--model /path/to/local/model`.
+- Use `--model` to override the default embedding model.
 - Filter by similarity with `--min-score` (default: `0.7`).
-- This tool must run fully offline; do not call external APIs.
-- Ensure `.kb_index/` is listed in `.gitignore`.
+- Slower but better for conceptual queries.
 
 ## Knowledge Capture
 
