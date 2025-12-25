@@ -1,8 +1,12 @@
 ---
-title: Page Numbering Implementation - Quick Reference
-tags: [pandoc, docx, word, page-numbering, implementation, example]
+tags:
+  - pandoc
+  - docx
+  - word
+  - page-numbering
+  - implementation
+  - example
 created: 2025-12-25
-related: [docx-page-numbering-pandoc.md, ooxml-manipulation-techniques.md]
 ---
 
 # Page Numbering Implementation - Quick Reference
@@ -219,3 +223,10 @@ Move the decimal reset from SECTION_1.md to an earlier file.
 - `reference.docx` - Template with footer definitions
 - `word/document.xml` - Target of post-processing
 - `word/footer1-3.xml` - Footer content with PAGE fields
+
+---
+
+## Related
+
+- [[DOCX Page Numbering with Pandoc]]
+- [[OOXML Manipulation Techniques]]

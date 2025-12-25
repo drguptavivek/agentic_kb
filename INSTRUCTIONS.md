@@ -1,11 +1,12 @@
 ---
-title: Knowledge Base Instructions
-tags: [instructions, maintenance]
+tags:
+  - instructions
+  - maintenance
 ---
 
 # Knowledge Base Instructions
 
-Guide for adding, updating, and maintaining the knowledge base.
+Guide for adding, updating, and maintaining the Obsidian-enabled knowledge base.
 
 ---
 
@@ -13,16 +14,17 @@ Guide for adding, updating, and maintaining the knowledge base.
 
 ### Step 1: Create the File
 
-Create a new markdown file in the `knowledge/` directory with proper frontmatter:
+Create a new markdown file in the appropriate domain folder under `knowledge/`:
 
 ```bash
 # Example: Adding a Git workflow guide
-cat > knowledge/git-workflow.md << 'EOF'
+cat > "knowledge/Development Tools/Git Workflow.md" << 'EOF'
 ---
-title: Git Workflow Guide
-tags: [git, version-control, workflow]
+tags:
+  - git
+  - version-control
+  - workflow
 created: 2025-12-25
-related: []
 ---
 
 # Git Workflow Guide
@@ -46,45 +48,50 @@ Code examples, commands, or usage patterns...
 ## References
 
 Links to external documentation, related files, etc.
+
+---
+
+## Related
+
+- [[Other Related Topic]]
 EOF
 ```
 
-### Step 2: Update README.md
+### Step 2: Use Wikilinks
 
-**IMPORTANT**: When adding new files, you must update both sections in README.md:
-
-#### A. Add to Domain Section
-
-Add your file to the appropriate domain category. If a new domain is needed, create a new section header.
+Link to related knowledge files using Obsidian's `[[wikilink]]` syntax:
 
 ```markdown
-### Your New Domain Name
+## Related
+
+- [[DOCX Page Numbering with Pandoc]]
+- [[OOXML Manipulation Techniques]]
+```
+
+**Note**: Use the exact filename (without folder path) for wikilinks.
+
+### Step 3: Update README.md
+
+Add your file to the appropriate domain section in README.md:
+
+```markdown
+### Development Tools
 
 | File | Description | Tags |
 |------|-------------|------|
-| [knowledge/your-file.md](knowledge/your-file.md) | Brief description | `tag1`, `tag2`, `tag3` |
+| [[Git Workflow]] | Git branching and commit workflows | `#git`, `#version-control` |
 ```
 
-#### B. Update Tag Index
-
-Add new tags to the Tag Index. Tags should be **lowercase** and use **hyphens** for multi-word tags.
-
-```markdown
-| `your-new-tag` | Domain | [file1.md](knowledge/file1.md), [file2.md](knowledge/file2.md) |
-```
-
-### Step 3: Commit and Push
+### Step 4: Commit and Push
 
 ```bash
 # From the kb directory
-git add knowledge/your-file.md README.md
-git commit -m "Add: Your new knowledge file"
+git add "knowledge/Development Tools/Git Workflow.md" README.md
+git commit -m "Add: Git Workflow guide"
 git push
 ```
 
-### Step 4: Update Dependent Projects
-
-Projects using this submodule should update:
+### Step 5: Update Dependent Projects
 
 ```bash
 # In projects using this submodule
@@ -93,19 +100,54 @@ git submodule update --remote kb
 
 ---
 
-## File Template
+## Obsidian Workflow
 
-Copy this template for new knowledge files:
+### Opening in Obsidian
+
+1. Download [Obsidian](https://obsidian.md)
+2. Open the `kb/` folder as a vault
+3. Use **Graph View** to see connections between files
+4. Click any `[[wikilink]]` to navigate
+
+### Using Graph View
+
+- **Nodes** = knowledge files
+- **Edges** = wikilinks between files
+- **Click node** to open the file
+- **Zoom/Pan** to explore the knowledge graph
+
+### Backlinks Panel
+
+In Obsidian, open any file to see:
+- **Backlinks**: Which files link to this file
+- **Outlinks**: Which files this file links to
+
+### Creating Links
+
+**While typing**: Type `[[` and Obsidian will suggest files to link to.
+
+**To existing file**: `[[Filename]]`
+
+**To new file**: `[[New Filename]]` → Obsidian creates it on click
+
+**With alias**: `[[Filename|Display Text]]`
+
+**With heading**: `[[Filename#Heading]]`
+
+---
+
+## File Template
 
 ```yaml
 ---
-title: Your Knowledge Title
-tags: [tag1, tag2, tag3]
+tags:
+  - tag1
+  - tag2
+  - tag3
 created: YYYY-MM-DD
-related: [related-file1.md, related-file2.md]
 ---
 
-# Your Knowledge Title
+# Title
 
 ## Overview
 
@@ -113,151 +155,187 @@ Brief description of what this knowledge covers.
 
 ## Problem/Context
 
-What problem does this solve? What context is needed?
+What problem does this solve?
 
 ## Solution
 
-Your solution content here...
+Your solution...
 
 ## Examples
 
-Code examples, commands, or usage patterns...
+Code/examples...
 
 ## References
 
-Links to external documentation, related files, etc.
+External links...
+
+---
+
+## Related
+
+- [[Related Topic 1]]
+- [[Related Topic 2]]
 ```
+
+---
+
+## Folder Structure
+
+```
+knowledge/
+├── Document Automation/
+│   └── (DOCX/OOXML/Pandoc related content)
+├── Development Tools/
+│   └── (Git, IDEs, CLI tools)
+├── APIs & Integrations/
+│   └── (REST, GraphQL, webhooks)
+├── Security/
+│   └── (Auth, encryption, compliance)
+└── DevOps & CI/CD/
+    └── (Docker, CI/CD, deployment)
+```
+
+**Creating new folders**: Add a new domain folder when a distinct topic area emerges.
+
+---
+
+## Naming Conventions
+
+### Files
+
+- Use **Title Case** for filenames: `Git Workflow.md`
+- Be **descriptive**: `DOCX Page Numbering with Pandoc.md` (not `docx.md`)
+- Avoid numbers unless part of a series: `Docker Part 1.md`
+
+### Folders
+
+- Use **Title Case** for folder names: `Document Automation`, `DevOps & CI/CD`
+- Group by **domain** not technology
+
+### Tags
+
+- Use **lowercase**: `#pandoc`, `#docx`
+- Use **hyphens** for multi-word: `#page-numbering`, `#document-automation`
+- Be **specific**: `#ooxml` + `#xml` (not just one)
 
 ---
 
 ## Maintenance Guidelines
 
-### Tag Conventions
+### Link Hygiene
 
-- Use **lowercase** tags
-- Use **hyphens** for multi-word tags: `document-automation`, `page-numbering`
-- Use **descriptive tags** that will be useful for searching
-- Include both **specific** and **general** tags: e.g., `ooxml` + `xml` + `document-automation`
+- **Check for broken links**: Use Obsidian's broken link warning
+- **Update related sections**: When moving/renaming files
+- **Use consistent titles**: File title should match wikilink text
 
-### Domain Organization
+### Tag Management
 
-- Add new domain sections when a distinct topic area emerges
-- Keep domain descriptions concise (one line per file)
-- Update the Tag Index when adding new tags
-
-### File Naming
-
-- Use **kebab-case**: `git-workflow.md`, `api-integration.md`
-- Be **descriptive**: `docx-page-numbering-pandoc.md` (not `docx.md`)
-- Avoid numbers unless part of a series: `docker-part-1.md`
-- **Always save in `knowledge/` directory**
+- **Keep tags focused**: 3-7 tags per file
+- **Use existing tags** when possible
+- **Remove unused tags** periodically
 
 ### Content Quality
 
-- **Be specific**: Include concrete examples, commands, and code
-- **Be concise**: Get to the point, avoid fluff
-- **Be accurate**: Test code examples before committing
-- **Link related content**: Use the `related` field to connect related topics
+- **Be specific**: Include concrete examples and commands
+- **Be concise**: Get to the point
+- **Link externally**: Reference official docs
+- **Link internally**: Use wikilinks to connect topics
 
 ---
 
 ## Updating Existing Files
 
-### Minor Updates
+### In Obsidian (Recommended)
 
-For small corrections or clarifications:
+1. Open file in Obsidian
+2. Edit with live preview
+3. See backlinks update in real-time
+4. Graph view shows new connections
+
+### Via Text Editor
 
 ```bash
-# Edit the file
-vim knowledge/existing-file.md
+# Edit file
+vim "knowledge/Document Automation/Topic.md"
 
-# Commit with descriptive message
-git add knowledge/existing-file.md
-git commit -m "Fix: Correct command example in existing-file"
+# Stage and commit
+git add "knowledge/Document Automation/Topic.md"
+git commit -m "Update: Improved explanation of X"
 git push
 ```
 
-### Major Updates
+### When Moving/Renaming Files
 
-For significant changes that affect structure or organization:
+**In Obsidian**: Use file rename (obsidian updates wikilinks automatically)
 
-1. Update the knowledge file
-2. Update README.md if tags or descriptions changed
-3. Update related files if content moved between files
-4. Commit with detailed message describing changes
+**Via git**: Manually update all `[[Old Name]]` references to `[[New Name]]`
 
 ```bash
-git add knowledge/affected-file.md README.md
-git commit -m "Update: Restructure affected-file for clarity
+# Find files linking to old name
+grep -r "Old Name" knowledge/
 
-- Added new section on X
-- Updated code examples
-- Changed tags to reflect new content"
-git push
+# Replace in all files
+find knowledge/ -type f -exec sed -i '' 's/\[\[Old Name\]\]/[[New Name]]/g' {} +
 ```
 
 ---
 
 ## Removing Content
 
-### Removing a File
+### Deprecating (Preferred)
 
-```bash
-# Remove the file
-git rm knowledge/obsolete-file.md
-
-# Update README.md (remove from Domain section and Tag Index)
-vim README.md
-
-# Commit
-git add README.md
-git commit -m "Remove: obsolete-file.md - content superseded by new-file.md"
-git push
-```
-
-### Deprecating Content
-
-Instead of removing, consider deprecating with a notice:
+Add deprecation notice at top:
 
 ```markdown
 ---
-title: Old Topic
-tags: [deprecated, old-topic]
-created: 2020-01-01
-related: [new-topic.md]
+tags:
+  - deprecated
+  - old-topic
 ---
 
 # Old Topic
 
-**DEPRECATED**: This content has been superseded by [new-topic.md](new-topic.md).
-
-...
+**DEPRECATED**: This content has been superseded by [[New Topic]].
 ```
 
----
+### Deleting
 
-## Review Process
+```bash
+# Remove file
+git rm "knowledge/Document Automation/Obsolete.md"
 
-### Before Committing
+# Update README.md (remove from domain section)
+vim README.md
 
-- [ ] File saved in `knowledge/` directory
-- [ ] Frontmatter complete (title, tags, created, related)
-- [ ] README.md updated (Domain section + Tag Index)
-- [ ] Links tested (both internal and external)
-- [ ] Code examples tested
-- [ ] Spelling and grammar checked
-
-### After Major Changes
-
-1. **Test submodule updates** in a dependent project
-2. **Verify links** still work
-3. **Check for broken references** in `related` fields
+# Commit
+git add README.md
+git commit -m "Remove: Obsolete.md - superseded by New.md"
+git push
+```
 
 ---
 
 ## Troubleshooting
 
-### Submodule Not Updating in Parent Project
+### Graph View Shows No Connections
+
+**Cause**: No wikilinks between files.
+
+**Fix**: Add `[[Related File]]` sections to connect topics.
+
+### Broken Wikilinks
+
+**Cause**: File renamed but links not updated.
+
+**Fix**:
+```bash
+# Find broken links
+grep -r "\[\[Missing File\]\]" knowledge/
+
+# Or use Obsidian's broken link report
+```
+
+### Submodule Not Updating
 
 ```bash
 # In parent project
@@ -266,26 +344,13 @@ git submodule update --init --recursive
 git submodule update --remote kb
 ```
 
-### Broken Links After Moving Files
-
-When moving or renaming files, search for references:
-
-```bash
-# Find files linking to old-name.md
-grep -r "old-name.md" knowledge/
-```
-
-Update all `related` fields and markdown links found.
-
 ### Merge Conflicts
-
-When pulling updates with conflicts:
 
 ```bash
 git fetch origin
 git checkout main
 git merge origin/main
-# Resolve conflicts in affected files
+# Resolve conflicts
 git add resolved-files
 git commit
 git push
@@ -298,60 +363,54 @@ git push
 ### Typical Workflow
 
 ```bash
-# 1. Pull latest changes
+# 1. Pull latest
 git pull origin main
 
-# 2. Create/edit knowledge files
-vim knowledge/new-topic.md
+# 2. Open in Obsidian
+# Edit files, add wikilinks, etc.
 
-# 3. Update README.md
-vim README.md
+# 3. Stage changes
+git add knowledge/
 
-# 4. Commit changes
-git add knowledge/new-topic.md README.md
-git commit -m "Add: new-topic on XYZ"
+# 4. Update README if new files added
+git add README.md
 
-# 5. Push to remote
+# 5. Commit
+git commit -m "Add: New topic on XYZ"
+
+# 6. Push
 git push origin main
 ```
 
-### Best Practices
+### Commit Message Style
 
-- **Pull before pushing** to avoid merge conflicts
-- **Write descriptive commit messages** with "Add:", "Fix:", "Update:", "Remove:" prefixes
-- **Update README.md** in the same commit as content changes
-- **Test locally** before pushing (e.g., markdown linting, link checking)
+Use prefixes:
+- `Add:` - New knowledge files
+- `Update:` - Improvements to existing files
+- `Fix:` - Corrections
+- `Remove:` - Deleting/deprecating content
+- `Restructure:` - Moving files, reorganizing
 
 ---
 
-## Directory Structure
+## Best Practices
 
-```
-kb/
-├── README.md           # Knowledge index (domains, tags, finding info)
-├── INSTRUCTIONS.md     # This file - how to add/update knowledge
-├── LICENSE            # License file
-└── knowledge/         # All knowledge files go here
-    ├── docx-page-numbering-pandoc.md
-    ├── ooxml-manipulation-techniques.md
-    ├── page-numbering-implementation.md
-    └── ...
-```
+1. **Use Obsidian** for editing (wikilink suggestions, graph view)
+2. **Link generously** - More connections = better graph
+3. **Write for future you** - Be detailed and specific
+4. **Review periodically** - Update outdated content
+5. **Keep flat** - Avoid deep nesting in folders
+6. **Test links** - Click wikilinks after editing
 
 ---
 
 ## Resources
 
-### Markdown Reference
-
-- [GitHub Flavored Markdown](https://github.github.com/gfm/)
-- [YAML Frontmatter](https://jekyllrb.com/docs/front-matter/)
-
-### Git Submodule Reference
-
-- [Git Submodule Documentation](https://git-scm.com/docs/git-submodule)
-- [Working with Submodules](https://github.blog/2016-02-01-working-with-submodules/)
+- [Obsidian Documentation](https://help.obsidian.md/)
+- [Obsidian Graph View](https://help.obsidian.md/Graph+view)
+- [Obsidian Wikilinks](https://help.obsidian.md/Linking+notes+and+files)
+- [Obsidian Tags](https://help.obsidian.md/Tags)
 
 ---
 
-**Need help?** Refer to [README.md](README.md) for knowledge base structure and content.
+**Need help?** See [README.md](README.md) for knowledge base overview.

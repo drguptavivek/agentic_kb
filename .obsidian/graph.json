@@ -1,0 +1,53 @@
+{
+  "backgroundColors": [
+    "#00000000"
+  ],
+  "collapse-recursion": true,
+  "field-colors": [
+    {
+      "field": "tags",
+      "color": "#a4a4a4"
+    }
+  ],
+  "field-groups": [
+    {
+      "field": "tags",
+      "label": "Tags"
+    }
+  ],
+  "filter": {
+    "field": "tags",
+    "operator": "OR"
+  },
+  "filters": [],
+  "group": null,
+  "height": 500,
+  "layout": "force-directed",
+  "limit": null,
+  "local-attachments": {
+    "control": "hide",
+    "depth": 1,
+    "enabled": true
+  },
+  "name": "Knowledge Graph",
+  "node-colors": [],
+  "node-size-field": null,
+  "opacity": 0,
+  "previewField": null,
+  "scale": 1,
+  "search": "",
+  "showArrow": true,
+  "showAttachments": true,
+  "showFields": [],
+  "showFilter": true,
+  "showIndex": false,
+  "showLegend": false,
+  "showLocalAttachments": false,
+  "showNodes": true,
+  "showOrphans": true,
+  "showSearch": true,
+  "showTags": true,
+  "sort": "byCreatedBy",
+  "width": 400,
+  "zoom": 1
+}

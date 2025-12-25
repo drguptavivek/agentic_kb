@@ -1,8 +1,12 @@
 ---
-title: OOXML Manipulation Techniques
-tags: [ooxml, docx, word, xml, python, document-automation]
+tags:
+  - ooxml
+  - docx
+  - word
+  - xml
+  - python
+  - document-automation
 created: 2025-12-25
-related: [docx-page-numbering-pandoc.md]
 ---
 
 # OOXML Manipulation Techniques
@@ -359,3 +363,9 @@ if not has_pgnumtype:
 1. Verify relationship exists in document.xml.rels
 2. Check footer XML has proper field code structure
 3. Update fields in Word (F9)
+
+---
+
+## Related
+
+- [[DOCX Page Numbering with Pandoc]]

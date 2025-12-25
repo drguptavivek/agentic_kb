@@ -1,8 +1,12 @@
 ---
-title: DOCX Page Numbering with Pandoc
-tags: [pandoc, docx, word, page-numbering, ooxml, document-automation]
+tags:
+  - pandoc
+  - docx
+  - word
+  - page-numbering
+  - ooxml
+  - document-automation
 created: 2025-12-25
-related: [ooxml-manipulation-techniques.md, page-numbering-implementation.md]
 ---
 
 # DOCX Page Numbering with Pandoc
@@ -232,3 +236,10 @@ subprocess.run(["python", "c_add_footers.py", "output.docx"])
 3. **Test in Word** - Preview tools may not accurately render page numbering
 4. **Bookmark-based TOC** - Use bookmarks to control TOC range, not just levels
 5. **Consistent section structure** - Each logical section should have explicit `w:sectPr`
+
+---
+
+## Related
+
+- [[OOXML Manipulation Techniques]]
+- [[Page Numbering Implementation]]

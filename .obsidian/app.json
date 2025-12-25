@@ -1,0 +1,18 @@
+{
+  "legacyEditor": false,
+  "livePreview": true,
+  "showLineNumber": true,
+  "frameWidth": 700,
+  "foldHeading": true,
+  "foldIndent": true,
+  "showFrontmatter": true,
+  "alwaysUpdateLinks": true,
+  "useWikiLinks": true,
+  "newLinkFormat": "shortest",
+  "attachmentFolderPath": "./assets",
+  "promptDelete": false,
+  "userIgnoreFilters": [
+    ".obsidian/",
+    ".git/"
+  ]
+}
