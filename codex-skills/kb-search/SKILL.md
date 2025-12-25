@@ -23,9 +23,11 @@ If the user doesn't have agentic_kb set up yet, guide them through the initial s
 For users who want to customize and extend the KB with their own knowledge:
 
 ```bash
-# Run the setup script
+# Run the setup script if present
 scripts/setup_kb.sh
 ```
+
+If the setup script is missing, use the manual steps below.
 
 The script will:
 1. Check if KB already exists
@@ -119,16 +121,19 @@ cd agentic_kb
 
 ### Session Initialization
 
-**CRITICAL**: At the start of each session, update the KB submodule to ensure access to latest knowledge:
+**CRITICAL**: At the start of each session, update the KB to ensure access to latest knowledge.
+
+If the parent repo includes `scripts/update_kb.sh`, run it:
 
 ```bash
 scripts/update_kb.sh [submodule_path]
 ```
 
-The script will:
-- Update submodule to latest from remote
-- Stage and commit the pointer update
-- Report if KB is already up to date
+If the KB was set up as a direct clone (not a submodule), or if the update script is missing, pull updates directly:
+
+```bash
+git -C agentic_kb pull
+```
 
 ### Basic Search Workflow
 
