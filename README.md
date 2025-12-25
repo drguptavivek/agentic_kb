@@ -10,7 +10,9 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 
 **Obsidian-enabled knowledge base** with folder organization, wikilinks, and graph view.
 
-**Offline Vector Search** enabled
+**Search Options**:
+- **Typesense** (recommended): Fast full-text search with faceted filtering → [QUICK-TYPESENSE-WORKFLOW.md](QUICK-TYPESENSE-WORKFLOW.md)
+- **FAISS**: Semantic vector search for conceptual queries → [QUICK-FAISS-WORKFLOW.md](QUICK-FAISS-WORKFLOW.md)
 
 **Need to add or update knowledge?** See [INSTRUCTIONS.md](INSTRUCTIONS.md)
 
