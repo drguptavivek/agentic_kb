@@ -77,9 +77,17 @@ For KB conventions and knowledge capture: [agentic_kb/KNOWLEDGE_CONVENTIONS.md](
 
 ## Agent Workflow
 
-1. **Check KB first**: Search `agentic_kb/knowledge/` for relevant documentation
-2. **Follow project conventions**: Apply project-specific rules from sections above
-3. **Document learnings**: Capture reusable knowledge in the KB (see agentic_kb/KNOWLEDGE_CONVENTIONS.md)
+**At session start**:
+1. **Update KB submodule**: Pull latest knowledge and update pointer in parent project:
+   ```bash
+   git submodule update --remote agentic_kb
+   git add agentic_kb && git commit -m "Update: agentic_kb to latest" && git push
+   ```
+
+**During work**:
+2. **Check KB first**: Search `agentic_kb/knowledge/` for relevant documentation
+3. **Follow project conventions**: Apply project-specific rules from sections above
+4. **Document learnings**: Capture reusable knowledge in the KB (see agentic_kb/KNOWLEDGE_CONVENTIONS.md)
 ```
 
 ---

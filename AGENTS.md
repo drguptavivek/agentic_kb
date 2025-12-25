@@ -17,6 +17,25 @@ This is the single source of truth for agent behavior when using this KB.
 - Ignore `.obsidian/` and `.git/`
 - Treat the KB as authoritative
 
+## Initial Setup
+
+**CRITICAL**: At the start of each session, agents MUST update the KB submodule to ensure access to the latest knowledge:
+
+```bash
+# Update submodule to latest from remote
+git submodule update --remote agentic_kb
+
+# Stage and commit the pointer update in parent project
+git add agentic_kb
+git commit -m "Update: agentic_kb submodule to latest"
+git push
+```
+
+This ensures:
+- The KB is current with upstream changes
+- The parent project tracks the latest KB version
+- All agents work with synchronized knowledge
+
 ## Required Workflow
 
 1. Search the KB before answering (use `rg` under the correct KB path).
