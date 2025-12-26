@@ -1,0 +1,3 @@
+[submodule "agentic_kb"]
+	path = agentic_kb
+	url = https://github.com/drguptavivek/agentic_kb.git
