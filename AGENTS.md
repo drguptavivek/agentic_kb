@@ -20,25 +20,30 @@ This is the single source of truth for agent behavior when using this KB.
 ## First-Time Setup
 
 For initial KB setup with a submodule:
-- **With your fork**: `agentic_kb/scripts/setup_kb.sh --fork-url <YOUR_FORK_URL>`
-- **Default KB**: `agentic_kb/scripts/setup_kb.sh --default`
-- **Read-only**: `agentic_kb/scripts/setup_kb.sh --read-only`
+- **With your fork**: `scripts/setup_kb.sh --fork-url <YOUR_FORK_URL>`
+- **Default KB**: `scripts/setup_kb.sh --default`
+- **Read-only**: `scripts/setup_kb.sh --read-only`
 
-See the kb-search skill documentation for detailed setup options.
+For detailed setup options, see `GIT_WORKFLOWS.md`.
 
 ## Session Initialization
 
-**CRITICAL**: At the start of each session, agents MUST update the KB submodule to ensure access to the latest knowledge:
+**CRITICAL**: At the start of each session, agents MUST update the KB to ensure access to the latest knowledge:
 
 ```bash
-# Recommended: Use the update script
+# If KB is a submodule, use the update script:
 agentic_kb/scripts/update_kb.sh
 
-# Or manually:
+# Or manually update submodule:
 git submodule update --remote agentic_kb
 git add agentic_kb
 git commit -m "Update: agentic_kb submodule to latest"
 git push
+
+# If KB is a direct clone (not a submodule):
+cd agentic_kb && git pull && cd ..
+# Or from knowledge/ if KB is the main repo:
+git pull
 ```
 
 This ensures:
@@ -65,14 +70,14 @@ This ensures:
 Use the smart search script that automatically tries Typesense first, then falls back to FAISS:
 
 ```bash
-# Basic search
+# If KB is a submodule:
 agentic_kb/scripts/smart_search.sh "your query"
-
-# With domain filter
 agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
-
-# Higher similarity threshold for FAISS fallback
 agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
+
+# If KB is the main repo:
+scripts/smart_search.sh "your query"
+scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
 ```
 
 **Performance**: Combines the speed of Typesense (10-50ms) with the semantic understanding of FAISS (100-500ms) as fallback.
