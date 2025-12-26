@@ -17,15 +17,25 @@ This is the single source of truth for agent behavior when using this KB.
 - Ignore `.obsidian/` and `.git/`
 - Treat the KB as authoritative
 
-## Initial Setup
+## First-Time Setup
+
+For initial KB setup with a submodule:
+- **With your fork**: `agentic_kb/scripts/setup_kb.sh --fork-url <YOUR_FORK_URL>`
+- **Default KB**: `agentic_kb/scripts/setup_kb.sh --default`
+- **Read-only**: `agentic_kb/scripts/setup_kb.sh --read-only`
+
+See the kb-search skill documentation for detailed setup options.
+
+## Session Initialization
 
 **CRITICAL**: At the start of each session, agents MUST update the KB submodule to ensure access to the latest knowledge:
 
 ```bash
-# Update submodule to latest from remote
-git submodule update --remote agentic_kb
+# Recommended: Use the update script
+agentic_kb/scripts/update_kb.sh
 
-# Stage and commit the pointer update in parent project
+# Or manually:
+git submodule update --remote agentic_kb
 git add agentic_kb
 git commit -m "Update: agentic_kb submodule to latest"
 git push
@@ -38,7 +48,11 @@ This ensures:
 
 ## Required Workflow
 
-1. Search the KB before answering (use `rg` under the correct KB path).
+1. Search the KB before answering using one of these methods (in order of preference):
+   - **Smart search** (tries Typesense → FAISS automatically)
+   - **Typesense** for fast full-text search with filters
+   - **FAISS** for semantic/conceptual queries
+   - **ripgrep** (`rg`) for exact pattern matching
 2. Open the most relevant file(s) using the Read tool.
 3. Answer using KB content, preferring exact steps or checklists.
 4. Cite sources using: `<file path> -> <heading>`.
@@ -46,7 +60,24 @@ This ensures:
 
 **IMPORTANT**: Never answer from search snippets alone. Always read the full files first. See `knowledge/Search/agent-retrieval-workflow.md` for detailed workflow.
 
-## Deterministic Search Pattern
+## Smart Search (Recommended)
+
+Use the smart search script that automatically tries Typesense first, then falls back to FAISS:
+
+```bash
+# Basic search
+agentic_kb/scripts/smart_search.sh "your query"
+
+# With domain filter
+agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
+
+# Higher similarity threshold for FAISS fallback
+agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
+```
+
+**Performance**: Combines the speed of Typesense (10-50ms) with the semantic understanding of FAISS (100-500ms) as fallback.
+
+## Deterministic Search Pattern (ripgrep)
 
 ```bash
 # Direct repo

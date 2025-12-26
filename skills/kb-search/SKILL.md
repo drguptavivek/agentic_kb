@@ -1,6 +1,6 @@
 ---
 name: kb-search
-description: Search and retrieve knowledge from agentic_kb knowledge base. Use when the user requests to search the KB, asks "How do I..." questions that should consult the KB, wants to document new knowledge, or at session start to update the KB submodule. Supports Typesense (fast full-text search), FAISS (semantic vector search), and ripgrep (exact pattern matching).
+description: Search and retrieve knowledge from agentic_kb knowledge base. Use when the user requests to search the KB, asks "How do I..." questions that should consult the KB, wants to document new knowledge, or at session start to update the KB submodule. Also use when User wants to udpate the knowledge base with new knowledge. Knowledge Capture when you learn new, reusable knowledge during tasks. Supports Typesense (fast full-text search), FAISS (semantic vector search), and ripgrep (exact pattern matching). All KB is Obsidian formatted and can be browsed easily and visually with network maps in Obsidian.
 ---
 
 # KB Search
@@ -103,15 +103,6 @@ Before running searches, ask the user which search backend they prefer:
 
 If they choose Typesense, offer to set it up and index the KB. If they choose FAISS, offer to build the index. If they choose file search, use `rg` only.
 
-### Option 3: Direct Repository Clone
-
-For using KB as a standalone repository (not as submodule):
-
-```bash
-git clone https://github.com/drguptavivek/agentic_kb.git
-cd agentic_kb
-# Use search commands directly in this directory
-```
 
 ## Quick Start
 

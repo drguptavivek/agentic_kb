@@ -28,7 +28,7 @@ rm -r  ~/.codex/skills/kb-search
 rm ~/.codex/skills/kb-search.skill
 
 # Download the packaged skill
-wget https://raw.githubusercontent.com/drguptavivek/agentic_kb/main/codex-skills/kb-search.skill   -O ~/.codex/skills/kb-search.skill
+wget https://raw.githubusercontent.com/drguptavivek/agentic_kb/main/skills/kb-search.skill   -O ~/.codex/skills/kb-search.skill
 
 # Unpack to folder-based install (some Codex builds prefer this)
 mkdir -p ~/.codex/skills/kb-search
@@ -53,7 +53,7 @@ rm -r ~/.codex/skills/kb-search
 rm    ~/.codex/skills/kb-search.skill
 
 # Copy the folder into Codex skills directory
-cp -R codex-skills/kb-search ~/.codex/skills/
+cp -R skills/kb-search ~/.codex/skills/
 unzip -o ~/.codex/skills/kb-search.skill -d ~/.codex/skills/
 # Restart Codex to load the skill
 ```

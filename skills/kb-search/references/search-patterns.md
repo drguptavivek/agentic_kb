@@ -4,11 +4,41 @@ This document provides common search patterns and examples for effectively query
 
 ## Table of Contents
 
+- [Smart Search (Recommended)](#smart-search-recommended)
 - [Basic Search Patterns](#basic-search-patterns)
 - [Faceted Search with Filters](#faceted-search-with-filters)
 - [Advanced Filter Combinations](#advanced-filter-combinations)
 - [When to Use Each Search Method](#when-to-use-each-search-method)
 - [Common Search Scenarios](#common-search-scenarios)
+- [Performance Comparison](#performance-comparison)
+- [Tips for Effective Searching](#tips-for-effective-searching)
+
+## Smart Search (Recommended)
+
+The smart search script automatically tries Typesense first, then falls back to FAISS if Typesense is unavailable or returns poor results.
+
+```bash
+# Basic search
+agentic_kb/scripts/smart_search.sh "your query"
+
+# With domain filter
+agentic_kb/scripts/smart_search.sh "pandoc" --filter "domain:Document Automation"
+
+# With type filter
+agentic_kb/scripts/smart_search.sh "workflow" --filter "type:howto"
+
+# Combined filters
+agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
+
+# Higher similarity threshold for FAISS fallback
+agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
+```
+
+**Benefits:**
+- Automatic fallback (Typesense → FAISS)
+- Single command for both methods
+- Consistent interface
+- Best performance when Typesense is available
 
 ## Basic Search Patterns
 
@@ -171,6 +201,17 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "template"
 
 ## When to Use Each Search Method
 
+### Use Smart Search When:
+
+- **Starting any search task** - It automatically chooses the best method
+- **Unsure which method to use** - Combines Typesense speed with FAISS semantic fallback
+- **Want consistent behavior** - Single interface for both search backends
+
+**Examples:**
+- "Find anything about pandoc workflows"
+- "Search for deployment guides"
+- "Look up authentication patterns"
+
 ### Use Typesense When:
 
 - Looking for specific terms or keywords
@@ -213,68 +254,82 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "template"
 ### Scenario 1: Learning a New Topic
 
 ```bash
-# Step 1: Broad Typesense search with domain filter
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "document automation" \
+# Step 1: Broad smart search
+agentic_kb/scripts/smart_search.sh "document automation"
+
+# Step 2: Filter by domain and status
+agentic_kb/scripts/smart_search.sh "document automation" \
   --filter "domain:Document Automation && status:approved"
 
-# Step 2: Refine to how-to guides
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "document automation" \
+# Step 3: Refine to how-to guides
+agentic_kb/scripts/smart_search.sh "document automation" \
   --filter "domain:Document Automation && type:howto && status:approved"
 
-# Step 3: Read the returned files for full context
+# Step 4: Read the returned files for full context
 ```
 
 ### Scenario 2: Solving a Specific Problem
 
 ```bash
-# Step 1: Try Typesense with specific keywords
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc page numbers"
+# Step 1: Try smart search with specific keywords
+agentic_kb/scripts/smart_search.sh "pandoc page numbers"
 
-# Step 2: If no results, try FAISS with natural query
-cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
-  python scripts/search.py "how to add page numbers in pandoc"
-cd ..
+# Step 2: If results aren't specific enough, add filters
+agentic_kb/scripts/smart_search.sh "page numbers" \
+  --filter "domain:Document Automation && type:howto"
 
 # Step 3: Use rg to find exact references in promising files
 rg "page.*number" agentic_kb/knowledge/Document\ Automation/
+
+# Step 4: Read full files for complete context
 ```
 
 ### Scenario 3: Finding Policies or Standards
 
 ```bash
 # Search for approved policies
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "security" \
+agentic_kb/scripts/smart_search.sh "security" \
   --filter "type:policy && status:approved"
 
 # Search for checklists
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "deployment" \
+agentic_kb/scripts/smart_search.sh "deployment" \
   --filter "type:checklist && status:approved"
+
+# Find all reference documentation
+agentic_kb/scripts/smart_search.sh "*" \
+  --filter "type:reference && status:approved"
 ```
 
 ### Scenario 4: Exploring a Domain
 
 ```bash
 # Get overview of all approved content in domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "*" \
+agentic_kb/scripts/smart_search.sh "*" \
   --filter "domain:Security && status:approved"
 
 # Find all how-to guides in domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "*" \
+agentic_kb/scripts/smart_search.sh "*" \
   --filter "domain:Document Automation && type:howto"
+
+# Find all checklists across all domains
+agentic_kb/scripts/smart_search.sh "*" \
+  --filter "type:checklist && status:approved"
 ```
 
 ## Performance Comparison
 
-| Method | Speed | Best For | Returns |
-|--------|-------|----------|---------|
-| Typesense | 10-50ms | Exact terms, keywords | Full chunk content |
-| FAISS | 100-500ms | Concepts, semantic search | File paths + scores |
-| ripgrep | <10ms | Exact strings, patterns | Matching lines |
+| Method | Speed | Best For | Returns | Fallback |
+|--------|-------|----------|---------|----------|
+| Smart Search | 10-50ms* | All queries | Full chunks or file paths | Auto (Typesense→FAISS) |
+| Typesense | 10-50ms | Exact terms, keywords | Full chunk content | None |
+| FAISS | 100-500ms | Concepts, semantic | File paths + scores | None |
+| ripgrep | <10ms | Exact strings, patterns | Matching lines | None |
+
+*Smart search speed depends on which backend it uses
 
 ## Tips for Effective Searching
 
-1. **Start with Typesense** - Fastest and often sufficient
+1. **Start with Smart Search** - Handles fallback automatically, best overall choice
 2. **Use filters liberally** - Narrow results by domain, type, status
 3. **Fall back to FAISS** - If Typesense finds nothing relevant
 4. **Always read full files** - Don't rely on search snippets alone
