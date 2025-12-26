@@ -19,65 +19,46 @@ The `kb-search` skill enables Claude Code to:
 - **Docker** (optional) - For Typesense server
 
 ## Installation
+## Installation
 
-### Option A: Install User Skill (Recommended)
-
-User skills are loaded from `~/.claude-code/skills/` directory:
+### Option A: Install from a direct download
 
 ```bash
-# Create skills directory if it doesn't exist
-mkdir -p ~/.claude-code/skills
+# Clean up existing
+rm -r  ~/.claude-code/skills/kb-search
+rm ~/.claude-code/skills/kb-search.skill
 
-# Clean up existing installation
-rm -rf ~/.claude-code/skills/kb-search
-rm -f ~/.claude-code/skills/kb-search.skill
+# Download the packaged skill
+wget https://raw.githubusercontent.com/drguptavivek/agentic_kb/main/skills/kb-search.skill   -O ~/.claude-code/skills/kb-search.skill
 
-# Copy from your local repo
-cp -R /Users/vivekgupta/kb/skills/kb-search ~/.claude-code/skills/
-
-# If you have a .skill file, copy it too
-cp /Users/vivekgupta/kb/skills/kb-search.skill ~/.claude-code/skills/ 2>/dev/null || true
+# Unpack to folder-based install (some Claude Code builds prefer this)
+mkdir -p ~/.claude-code/skills/kb-search
+unzip -o ~/.claude-code/skills/kb-search.skill -d ~/.claude-code/skills/
 
 # Restart Claude Code to load the skill
 ```
 
-### Option B: Install from Remote Repository
+### Option B: Install from skill local REPO folder - Helps Keeps skill updated
+
 
 ```bash
-# Create skills directory
-mkdir -p ~/.claude-code/skills
-
-# Clone the repo to a temporary location
-cd /tmp
+# From your workspace directory
 git clone https://github.com/drguptavivek/agentic_kb
 cd agentic_kb
 
-# Copy the skill
+# Fetch latest
+git pull
+
+# Remove older version of skill
+rm -r ~/.claude-code/skills/kb-search
+rm    ~/.claude-code/skills/kb-search.skill
+
+# Copy the folder into Claude Code skills directory
 cp -R skills/kb-search ~/.claude-code/skills/
-
-# Cleanup
-cd ~
-rm -rf /tmp/agentic_kb
-
-# Restart Claude Code
+unzip -o ~/.claude-code/skills/kb-search.skill -d ~/.claude-code/skills/
+# Restart Claude Code to load the skill
 ```
 
-### Option C: Symlink from Local Repo (For Development)
-
-If you're actively developing the skill:
-
-```bash
-# Create skills directory
-mkdir -p ~/.claude-code/skills
-
-# Remove existing
-rm -rf ~/.claude-code/skills/kb-search
-
-# Create symlink
-ln -s /Users/vivekgupta/kb/skills/kb-search ~/.claude-code/skills/kb-search
-
-# Restart Claude Code
-```
 
 ## Verify Installation
 
