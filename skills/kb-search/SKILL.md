@@ -272,9 +272,25 @@ For detailed domain descriptions, see [references/kb-domains.md](references/kb-d
 
 When you learn new, reusable knowledge during tasks:
 
-1. Ask user for confirmation before making KB edits
-2. Follow the learning capture workflow in `knowledge/Document Automation/learning-capture-steps.md`
-3. Follow conventions in `KNOWLEDGE_CONVENTIONS.md`
+1. Search to confirm the knowledge is not already in the KB.
+2. Ask user for confirmation before making KB edits.
+3. Follow the learning capture workflow in `knowledge/Document Automation/learning-capture-steps.md`.
+4. Follow conventions in `KNOWLEDGE_CONVENTIONS.md`.
+
+### Create a New Note Skeleton (Automated)
+
+After the user confirms, generate a correctly formatted note skeleton (frontmatter + headings) with:
+
+```bash
+uv run python skills/kb-search/scripts/capture_note.py \
+  --title "Your Title" \
+  --domain "Search" \
+  --type note \
+  --status draft \
+  --tags "agents,workflow,retrieval"
+```
+
+The script auto-detects whether the KB lives in `knowledge/` or `agentic_kb/knowledge/`, creates the domain folder if missing, and prints the created path.
 
 **Requirements for new notes:**
 - YAML frontmatter with tags and created date
