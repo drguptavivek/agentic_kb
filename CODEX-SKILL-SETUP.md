@@ -20,18 +20,7 @@ The `kb-search` Codex skill enables Codex to:
 
 ## Installation
 
-
-### Option A: Install from this repo
-
-```bash
-# Copy packaged skill to Codex skills directory
-cp codex-skills/kb-search.skill ~/.codex/skills/
-
-# Restart Codex to load the skill
-```
-
-
-### Option B: Install from a direct download
+### Option A: Install from a direct download
 
 ```bash
 # Clean up existing
@@ -48,13 +37,24 @@ unzip -o ~/.codex/skills/kb-search.skill -d ~/.codex/skills/
 # Restart Codex to load the skill
 ```
 
-### Option C: Install from skill folder (developer mode)
+### Option B: Install from skill local REPO folder - Helps Keeps skill updated
+
 
 ```bash
-git clone 
+# From your workspace directory
+git clone https://github.com/drguptavivek/agentic_kb
+cd agentic_kb
+
+# Fetch latest
+git pull
+
+# Remove older version of skill
+rm -r ~/.codex/skills/kb-search
+rm    ~/.codex/skills/kb-search.skill
+
 # Copy the folder into Codex skills directory
 cp -R codex-skills/kb-search ~/.codex/skills/
-
+unzip -o ~/.codex/skills/kb-search.skill -d ~/.codex/skills/
 # Restart Codex to load the skill
 ```
 
