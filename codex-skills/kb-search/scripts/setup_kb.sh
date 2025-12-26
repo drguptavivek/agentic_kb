@@ -2,16 +2,18 @@
 # Initial setup for agentic_kb knowledge base
 # Guides users through forking and setting up their own KB
 #
-# Usage: ./setup_kb.sh [submodule_path] [--read-only]
+# Usage: ./setup_kb.sh [submodule_path] [--read-only] [--fork-url URL]
 #
 # Arguments:
 #   submodule_path - Path for the KB submodule (default: agentic_kb)
 #   --read-only    - Skip fork setup, add as read-only submodule
+#   --fork-url     - Use provided fork URL as submodule (no prompts)
 
 set -e
 
 SUBMODULE_PATH="agentic_kb"
 READ_ONLY=false
+FORK_URL=""
 UPSTREAM_REPO="https://github.com/drguptavivek/agentic_kb.git"
 
 # Parse arguments
@@ -20,6 +22,10 @@ while [[ $# -gt 0 ]]; do
         --read-only)
             READ_ONLY=true
             shift
+            ;;
+        --fork-url)
+            FORK_URL="$2"
+            shift 2
             ;;
         *)
             SUBMODULE_PATH="$1"
@@ -89,72 +95,25 @@ if [ "$READ_ONLY" = true ]; then
     exit 0
 fi
 
-# Interactive fork setup
-echo "📋 Setup Options:"
-echo ""
-echo "1. Fork & Customize (Recommended)"
-echo "   - Create your own fork on GitHub"
-echo "   - Add and modify knowledge as needed"
-echo "   - Sync with upstream for updates"
-echo ""
-echo "2. Read-Only Access"
-echo "   - Use KB as-is without modifications"
-echo "   - Cannot push changes"
-echo "   - Re-run with --read-only flag"
-echo ""
-
-read -p "Do you want to create a fork? [Y/n] " -n 1 -r
-echo ""
-
-if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ -n $REPLY ]]; then
-    echo ""
-    echo "Please re-run with --read-only flag for read-only access:"
-    echo "  ./setup_kb.sh --read-only"
-    exit 0
-fi
-
-echo ""
-echo "📝 Fork Setup Instructions:"
-echo ""
-echo "1. Go to: https://github.com/drguptavivek/agentic_kb"
-echo "2. Click the 'Fork' button (top-right)"
-echo "3. Create the fork in your GitHub account"
-echo "4. Copy your fork's URL (should be: https://github.com/YOUR_USERNAME/agentic_kb.git)"
-echo ""
-
-read -p "Have you forked the repository? [Y/n] " -n 1 -r
-echo ""
-
-if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ -n $REPLY ]]; then
-    echo ""
-    echo "Please fork the repository first, then re-run this script."
-    echo "Fork at: https://github.com/drguptavivek/agentic_kb"
-    exit 0
-fi
-
-echo ""
-read -p "Enter your GitHub username: " GITHUB_USERNAME
-
-if [ -z "$GITHUB_USERNAME" ]; then
-    echo "❌ Error: GitHub username is required"
+if [ -z "$FORK_URL" ]; then
+    echo "❌ Error: Please provide --fork-url <URL> or use --read-only"
+    echo "Create a fork first:"
+    echo "  Web: https://github.com/drguptavivek/agentic_kb"
+    echo "  CLI: gh repo fork drguptavivek/agentic_kb --clone=false"
     exit 1
 fi
 
-FORK_URL="https://github.com/$GITHUB_USERNAME/agentic_kb.git"
-
-echo ""
-echo "Using fork URL: $FORK_URL"
-echo ""
-
 # Add submodule
-echo "📥 Adding KB submodule from your fork..."
+echo "📥 Adding KB submodule..."
 git submodule add "$FORK_URL" "$SUBMODULE_PATH"
 
-# Add upstream remote
-echo "📌 Setting up upstream remote..."
-cd "$SUBMODULE_PATH"
-git remote add upstream "$UPSTREAM_REPO"
-cd - > /dev/null
+if [ "$FORK_URL" != "$UPSTREAM_REPO" ]; then
+    # Add upstream remote
+    echo "📌 Setting up upstream remote..."
+    cd "$SUBMODULE_PATH"
+    git remote add upstream "$UPSTREAM_REPO"
+    cd - > /dev/null
+fi
 
 # Stage changes
 echo "💾 Staging changes..."
@@ -164,19 +123,25 @@ echo ""
 echo "✅ Setup complete!"
 echo ""
 echo "📚 Your KB is configured at: $SUBMODULE_PATH"
-echo "   Origin (your fork): $FORK_URL"
-echo "   Upstream (original): $UPSTREAM_REPO"
-echo ""
-echo "Next steps:"
-echo "  1. git commit -m \"Add: agentic_kb submodule (personal fork)\""
-echo "  2. git push"
-echo ""
-echo "To sync with upstream updates later:"
-echo "  cd $SUBMODULE_PATH"
-echo "  git fetch upstream"
-echo "  git merge upstream/main"
-echo "  git push origin main"
-echo "  cd .."
-echo "  git add $SUBMODULE_PATH"
-echo "  git commit -m \"Update: agentic_kb synced with upstream\""
-echo "  git push"
+if [ "$FORK_URL" != "$UPSTREAM_REPO" ]; then
+    echo "   Origin (your fork): $FORK_URL"
+    echo "   Upstream (original): $UPSTREAM_REPO"
+    echo ""
+    echo "Next steps:"
+    echo "  1. git commit -m \"Add: agentic_kb submodule (personal fork)\""
+    echo "  2. git push"
+    echo ""
+    echo "To sync with upstream updates later:"
+    echo "  cd $SUBMODULE_PATH"
+    echo "  git fetch upstream"
+    echo "  git merge upstream/main"
+    echo "  git push origin main"
+    echo "  cd .."
+    echo "  git add $SUBMODULE_PATH"
+    echo "  git commit -m \"Update: agentic_kb synced with upstream\""
+    echo "  git push"
+else
+    echo "   Origin: $FORK_URL"
+    echo ""
+    echo "Next step: git commit -m \"Add: agentic_kb submodule (default KB)\""
+fi

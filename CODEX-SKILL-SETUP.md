@@ -20,6 +20,7 @@ The `kb-search` Codex skill enables Codex to:
 
 ## Installation
 
+
 ### Option A: Install from this repo
 
 ```bash
@@ -29,16 +30,8 @@ cp codex-skills/kb-search.skill ~/.codex/skills/
 # Restart Codex to load the skill
 ```
 
-### Option B: Install from skill folder (developer mode)
 
-```bash
-# Copy the folder into Codex skills directory
-cp -R codex-skills/kb-search ~/.codex/skills/
-
-# Restart Codex to load the skill
-```
-
-### Option C: Install from a direct download
+### Option B: Install from a direct download
 
 ```bash
 # Clean up existing
@@ -54,6 +47,17 @@ unzip -o ~/.codex/skills/kb-search.skill -d ~/.codex/skills/
 
 # Restart Codex to load the skill
 ```
+
+### Option C: Install from skill folder (developer mode)
+
+```bash
+git clone 
+# Copy the folder into Codex skills directory
+cp -R codex-skills/kb-search ~/.codex/skills/
+
+# Restart Codex to load the skill
+```
+
 
 ## Verify Installation
 

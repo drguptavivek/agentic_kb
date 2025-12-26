@@ -18,85 +18,81 @@ The skill supports three search methods, in this order:
 
 If the user doesn't have agentic_kb set up yet, guide them through the initial setup:
 
-### Option 1: Fork and Use Your Own KB (Recommended)
+### Option 1: Your Personal Fork of Source KB Repo (recommended)
 
-For users who want to customize and extend the KB with their own knowledge:
+Ask the user:
+- Do you already have a knowledge-base repo fork you want to use?
+- If not, guide them to create a fork, then ask for the fork URL.
+  - Web: Go to https://github.com/drguptavivek/agentic_kb and Click FORK button
+  - CLI: `gh auth login && gh repo fork drguptavivek/agentic_kb --clone=false`
+- If they have a fork, ask for the repo URL (you can infer a likely GitHub username from the project’s `origin` remote, but confirm with the user).
 
-```bash
-# Run the setup script if present
-scripts/setup_kb.sh
-```
-
-If the setup script is missing, use the manual steps below.
-
-The script will:
-1. Check if KB already exists
-2. Prompt user to fork the repository on GitHub
-3. Add it as a submodule pointing to their fork
-4. Set up the original repository as an upstream remote
-5. Guide user through initial configuration
-
-**Manual setup alternative:**
+If they have a fork, add it as a submodule using the setup script:
 
 ```bash
-# 1. User forks https://github.com/drguptavivek/agentic_kb on GitHub to their account
-
-# 2. Add the fork as a submodule to their project
-git submodule add https://github.com/USERNAME/agentic_kb.git agentic_kb
-
-# 3. Add upstream remote to pull updates from original
-cd agentic_kb
-git remote add upstream https://github.com/drguptavivek/agentic_kb.git
-cd ..
-
-# 4. Commit the submodule addition
+agentic_kb/scripts/setup_kb.sh --fork-url <USER_KB_REPO_URL>
 git add .gitmodules agentic_kb
-git commit -m "Add: agentic_kb submodule (personal fork)"
+git commit -m "Add: agentic_kb submodule (existing fork)"
 git push
 ```
 
-**Syncing with upstream updates:**
+If they want the default KB, add the upstream as the submodule:
 
 ```bash
-cd agentic_kb
-git fetch upstream
-git merge upstream/main
-git push origin main
-cd ..
-git add agentic_kb
-git commit -m "Update: agentic_kb synced with upstream"
+agentic_kb/scripts/setup_kb.sh --default
+git add .gitmodules agentic_kb
+git commit -m "Add: agentic_kb submodule (default KB)"
 git push
 ```
 
-### Option 2: Read-Only Access
+**Agent tip: infer GitHub username from origin (confirm with user):**
 
-For users who only want to search/read the KB without contributing:
+```bash
+# HTTPS origin
+git remote get-url origin | sed -n 's#https://github.com/\\([^/]*\\)/.*#\\1#p'
 
+# SSH origin
+git remote get-url origin | sed -n 's#git@github.com:\\([^/]*\\)/.*#\\1#p'
+```
+
+### Option 2: Add source KB as Submodule. Add knowldge locally. Keeps KB and Project code separate.
+
+For users who only want to search/read the KB but do not have a fork yet:
+- In Main Project Repo - `git commit` works (it just records the submodule pointer).
+- In agentic_kb submodule - `git commit` works locally, but `git push` will fail because you don’t have permission to push to the upstream repo.
+But you can subsequenly create a fork and change the submoduel remote URL to you own fork.
+This way later on you can persist knowledge in personal git project effectively upgrading to option 1
 ```bash
 # Add as submodule (read-only, will fail on push)
-git submodule add https://github.com/drguptavivek/agentic_kb.git agentic_kb
+agentic_kb/scripts/setup_kb.sh --read-only
 git add .gitmodules agentic_kb
 git commit -m "Add: agentic_kb submodule (read-only)"
 ```
 
-**Note:** This won't allow pushing updates. If user wants to add knowledge later, they'll need to fork (Option 1).
+**Upgrade path (switch submodule to fork):**
 
-### Option 3: Clone from Source, Then Fork Later
+```bash
+# From parent repo
+cd agentic_kb
+git remote set-url origin https://github.com/USERNAME/agentic_kb.git
+git remote add upstream https://github.com/drguptavivek/agentic_kb.git
+cd ..
+git add agentic_kb
+git commit -m "Update: agentic_kb to fork remote"
+git push
+```
 
-Use this when the user wants to get started quickly without forking yet, and migrate later.
+### Option 3: Clone from Source (not as git submodule). Integrate with main project.
+This does not add a sub-module; it brings the source KB into the main repo.
+The KB becomes part of the main repo only (no cross-project KB).
+All knowledge becomes local to current project. Add and udpate knowldge in current project.
+Commit knowledge as part of main project (not as submodule).
 
 ```bash
 # Clone directly from upstream
 git clone https://github.com/drguptavivek/agentic_kb.git
 ```
 
-Later, the user can fork on GitHub and repoint the remote:
-
-```bash
-# Inside the cloned repo
-git remote set-url origin https://github.com/USERNAME/agentic_kb.git
-git push -u origin main
-```
 
 ## Search Preference (Ask First)
 
@@ -123,10 +119,10 @@ cd agentic_kb
 
 **CRITICAL**: At the start of each session, update the KB to ensure access to latest knowledge.
 
-If the parent repo includes `scripts/update_kb.sh`, run it:
+If the parent repo includes `agentic_kb/scripts/update_kb.sh`, run it:
 
 ```bash
-scripts/update_kb.sh [submodule_path]
+agentic_kb/scripts/update_kb.sh [submodule_path]
 ```
 
 If the KB was set up as a direct clone (not a submodule), or if the update script is missing, pull updates directly:
@@ -147,19 +143,19 @@ git -C agentic_kb pull
 Use the smart search script that tries Typesense first, falls back to FAISS:
 
 ```bash
-scripts/smart_search.sh "your query" [--filter "filter_expr"] [--min-score 0.8]
+agentic_kb/scripts/smart_search.sh "your query" [--filter "filter_expr"] [--min-score 0.8]
 ```
 
 Examples:
 ```bash
 # Basic search
-scripts/smart_search.sh "page numbering pandoc"
+agentic_kb/scripts/smart_search.sh "page numbering pandoc"
 
 # With domain filter
-scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
+agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
 
 # Higher similarity threshold for FAISS fallback
-scripts/smart_search.sh "git workflow" --min-score 0.8
+agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
 ```
 
 ## Search Methods
@@ -218,7 +214,7 @@ For complete filter examples and patterns, see [references/search-patterns.md](r
 ```bash
 cd agentic_kb
 uv run --with faiss-cpu --with numpy --with sentence-transformers \
-  python scripts/search.py "your query"
+  python agentic_kb/scripts/search.py "your query"
 cd ..
 ```
 
@@ -226,7 +222,7 @@ cd ..
 ```bash
 cd agentic_kb
 uv run --with faiss-cpu --with numpy --with sentence-transformers \
-  python scripts/search.py "page numbering in pandoc" --min-score 0.8
+  python agentic_kb/scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
 ```
 
@@ -319,7 +315,7 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc pa
 # Step 2: If no results, try FAISS
 cd agentic_kb
 uv run --with faiss-cpu --with numpy --with sentence-transformers \
-  python scripts/search.py "how to add page numbers in pandoc"
+  python agentic_kb/scripts/search.py "how to add page numbers in pandoc"
 cd ..
 
 # Step 3: Use rg for exact references
@@ -370,7 +366,7 @@ If FAISS search fails with index error:
 # Build the index (run from parent project root)
 cd agentic_kb
 uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm \
-  python scripts/index_kb.py
+  python agentic_kb/scripts/index_kb.py
 cd ..
 ```
 
@@ -386,8 +382,8 @@ cd ..
 
 ### scripts/
 
-- `update_kb.sh` - Update KB submodule to latest version
-- `smart_search.sh` - Intelligent search with Typesense → FAISS fallback
+- `agentic_kb/scripts/update_kb.sh` - Update KB submodule to latest version
+- `agentic_kb/scripts/smart_search.sh` - Intelligent search with Typesense → FAISS fallback
 
 ### references/
 
