@@ -17,7 +17,7 @@ updated: 2025-12-30
 
 ## Context
 
-This document maintains the proven compatible versions of Kotlin, KSP, Room, and Gradle plugins for the AIIMS ODK Collect project. Mismatches between these tools—particularly regarding Kotlin metadata versions—can lead to build failures.
+This document maintains the proven compatible versions of Kotlin, KSP, Room, and Gradle plugins for the MEDRES ODK Collect project. Mismatches between these tools—particularly regarding Kotlin metadata versions—can lead to build failures.
 
 ## Stable Configuration (Dec 2025)
 
@@ -47,7 +47,7 @@ ksp = { id = "com.google.devtools.ksp", version = "2.1.0-1.0.29" }
 
 ### 2. Configure Modules
 
-In module-level `build.gradle` files (e.g., `aiims-auth-module`), migrate from `kapt` to `ksp`:
+In module-level `build.gradle` files (e.g., `medres-auth-module`), migrate from `kapt` to `ksp`:
 
 ```gradle
 dependencies {

@@ -15,7 +15,7 @@ When using AndroidX Security's `EncryptedSharedPreferences`, the app crashes wit
 
 ```
 App.onCreate()
-→ Dagger creates AiimsAuthManager
+→ Dagger creates MedresAuthManager
 → Constructor calls refreshState()
 → refreshState() calls authStorage.getProjectId()
 → Triggers lazy initialization of masterKey

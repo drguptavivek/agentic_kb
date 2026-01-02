@@ -1,9 +1,9 @@
 ---
-title: AIIMS ODK Customizations
+title: MEDRES ODK Customizations
 type: reference
 domain: Android Development
 tags:
-  - aiims
+  - medres
   - auth
   - customization
   - odk
@@ -12,21 +12,21 @@ created: 2025-12-25
 updated: 2025-12-25
 ---
 
-# AIIMS ODK Collect Customizations
+# MEDRES ODK Collect Customizations
 
 ## Overview
-This document details the modifications made to the standard ODK Collect to support the AIIMS project requirements: **Bearer Token Authentication**, **Strict Data Isolation**, and **PIN Security**.
+This document details the modifications made to the standard ODK Collect to support the MEDRES project requirements: **Bearer Token Authentication**, **Strict Data Isolation**, and **PIN Security**.
 
-## 1. Authentication Module (`aiims_auth_module`)
+## 1. Authentication Module (`medres_auth_module`)
 A custom Android Library module added to the project. It handles the initial user login before handing control to ODK Core.
 
 ### Bearer Token Flow
 - **Standard ODK**: Uses Basic Auth (Username/Password).
-- **AIIMS Customization**:
-    1.  `AiimsLoginActivity` captures credentials.
+- **MEDRES Customization**:
+    1.  `MedresLoginActivity` captures credentials.
     2.  Authenticates against `/projects/{id}/app-users/login`.
     3.  Receives a **JWT Bearer Token**.
-    4.  Stores token in `aiims_auth_prefs`.
+    4.  Stores token in `medres_auth_prefs`.
 
 ### Token Injection
 The token is injected into ODK's networking layer via `OkHttpOpenRosaServerClientProvider` using an OkHttp Interceptor:
@@ -35,7 +35,7 @@ The token is injected into ODK's networking layer via `OkHttpOpenRosaServerClien
 ## 2. PIN Security & App Lock
 - **Requirement**: Prevent unauthorized access on shared devices if the app is minimized.
 - **Implementation**:
-    - **`AiimsAppLock`**: Tracks Activity lifecycle. When the app returns to foreground (`onActivityStarted`), it checks if a PIN is required.
+    - **`MedresAppLock`**: Tracks Activity lifecycle. When the app returns to foreground (`onActivityStarted`), it checks if a PIN is required.
     - **`PinEntryActivity`**: Blocks access until the correct PIN is entered.
     - **Wipe Policy**: 3 failed PIN attempts triggers a full **Logout** (Session Wipe).
 
@@ -55,10 +55,10 @@ The token is injected into ODK's networking layer via `OkHttpOpenRosaServerClien
 - **SSL**: Debug builds trust all certificates to allow local dev without valid certs.
 
 ## 6. Preference Storage
-The module uses a dedicated SharedPreference file: `aiims_auth_prefs`.
+The module uses a dedicated SharedPreference file: `medres_auth_prefs`.
 
 ### Key Preferences
-**Authentication (`AiimsConstants`)**
+**Authentication (`MedresConstants`)**
 -   `auth_token`: The active JWT Bearer Token.
 -   `token_expiry`: Timestamp (ms) when token expires.
 -   `active_project_id`: ID of the currently logged-in project (to support multi-project token switching).
@@ -73,7 +73,7 @@ The module uses a dedicated SharedPreference file: `aiims_auth_prefs`.
 -   `pending_revoke_reason`: Audit reason for the logout.
 
 ## 7. Critical Classes
--   **`AiimsAuthManager`**: The "Brain". Manages state transitions (`LoggedIn` -> `GracePeriod` -> `Expired`).
+-   **`MedresAuthManager`**: The "Brain". Manages state transitions (`LoggedIn` -> `GracePeriod` -> `Expired`).
 -   **`ProjectCleaner`**: The "Janitor". Wipes `forms.db` and `/forms/` dir on logout.
--   **`AiimsAppLock`**: The "Gatekeeper". Intercepts `onActivityStarted` to show `PinEntryActivity`.
--   **`TokenProvider`**: The "Bridge". Anonymous function injected into ODK logic to fetch `auth_token` from `aiims_auth_prefs`.
+-   **`MedresAppLock`**: The "Gatekeeper". Intercepts `onActivityStarted` to show `PinEntryActivity`.
+-   **`TokenProvider`**: The "Bridge". Anonymous function injected into ODK logic to fetch `auth_token` from `medres_auth_prefs`.

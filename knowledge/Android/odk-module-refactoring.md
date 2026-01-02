@@ -15,15 +15,15 @@ created: 2025-12-26
 
 # ODK Module Refactoring & Best Practices
 
-This guide documents patterns, issues, and solutions encountered when refactoring modules within the ODK Collect codebase (specifically derived from the `aiims-auth-module` refactor).
+This guide documents patterns, issues, and solutions encountered when refactoring modules within the ODK Collect codebase (specifically derived from the `medres-auth-module` refactor).
 
 ## 1. Module Configuration & Naming
 
 ### Naming Convention
 *   **Pattern:** Modules should use **lowercase, dash-separated** names.
-*   **Bad:** `aiims_auth_module` (underscores)
-*   **Good:** `aiims-auth-module` (dashes)
-*   **Action:** Rename directory and update `settings.gradle` (`include ':aiims-auth-module'`).
+*   **Bad:** `medres_auth_module` (underscores)
+*   **Good:** `medres-auth-module` (dashes)
+*   **Action:** Rename directory and update `settings.gradle` (`include ':medres-auth-module'`).
 
 ### Quality Checks
 All modules must enforce project-wide quality standards.
@@ -118,8 +118,8 @@ ODK Collect uses Dagger 2. Avoid manual Singleton patterns (`getInstance()`) whi
 
 ### Theme Naming
 *   **Pattern:** `<Type>.<Package>.<Name>`
-*   **Bad:** `Theme.AiimsAuth`
-*   **Good:** `Theme.Aiims.Auth` (matches `Theme.Material3.DayNight`)
+*   **Bad:** `Theme.MedresAuth`
+*   **Good:** `Theme.Medres.Auth` (matches `Theme.Material3.DayNight`)
 
 ## 5. Common Pitfalls
 

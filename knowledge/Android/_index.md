@@ -12,7 +12,7 @@ updated: 2025-12-30
 
 # Android Development — Index
 
-- [[aiims-odk-collect-customizations]]
+- [[medres-odk-collect-customizations]]
 - [[android-common-pitfalls]]
 - [[android-device-owner-kiosk-gotchas]]
 - [[android-strictmode-and-encryption]]

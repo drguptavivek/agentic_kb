@@ -231,7 +231,7 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" -
 |------|-------------|------|
 | [[android-common-pitfalls]] | Common pitfalls including threading, lifecycle, and build issues in Android | `#android`, `#threading`, `#performance` |
 | [[odk-collect-core]] | Core architecture of ODK Collect (MVVM, JavaRosa, Repo Pattern) | `#odk`, `#architecture`, `#android` |
-| [[aiims-odk-collect-customizations]] | AIIMS-specific fork details: Auth, PIN Security, Data Isolation | `#aiims`, `#auth`, `#customization` |
+| [[medres-odk-collect-customizations]] | MEDRES-specific fork details: Auth, PIN Security, Data Isolation | `#medres`, `#auth`, `#customization` |
 
 ### Development Tools
 
