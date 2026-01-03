@@ -100,6 +100,49 @@ garage bucket allow odk-central --read --write --key <key-id-from-above>
 exit
 ```
 
+#### What Does `layout assign` Do?
+
+**Garage is a distributed storage system**, so you must define a "layout" that tells Garage where nodes are located and how much storage they have.
+
+**Command breakdown**: `garage layout assign -z dc1 -c garage1 10G`
+
+| Component | Value | Meaning |
+|-----------|-------|---------|
+| `garage layout assign` | - | CLI command to assign storage layout |
+| `-z dc1` | Zone ID | "dc1" = Data Center 1 (failure domain) |
+| `-c garage1` | Node ID | "garage1" = Unique node identifier |
+| `10G` | Capacity | 10 GB storage for this node |
+
+**Why two steps?**
+
+1. `garage layout assign` - Stages the layout (not applied yet)
+2. `garage layout apply` - Actually configures the cluster
+
+This two-step process lets you review the layout before applying it.
+
+**For local development**: You're essentially saying:
+> "I have one node (`garage1`) in one zone (`dc1`) with 10GB storage. Configure it now."
+
+**The names don't matter** for local dev - you could use:
+- `-z local -c mynode 10G` (same effect)
+- `-z dev -c garage 5G` (less storage)
+
+**For production**: You'd assign multiple nodes for redundancy:
+```bash
+garage layout assign -z dc1 -c garage1 100G
+garage layout assign -z dc2 -c garage2 100G
+garage layout assign -z dc3 -c garage3 100G
+garage layout apply  # Apply all at once
+```
+
+**Verify the layout**:
+```bash
+garage layout show
+# Output:
+# Zone dc1
+#   garage1        10G        (running)
+```
+
 ### Step 4: Create `.garage.env`
 
 Create a `.garage.env` file in your ODK Central directory:
