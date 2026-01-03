@@ -6,6 +6,7 @@ tags:
   - s3
   - blob-storage
   - minio
+  - garage
   - storage
   - architecture
 status: approved
@@ -38,7 +39,7 @@ ODK Central supports storing binary blobs (attachments, form media files) in S3-
 │  S3-Compatible  │
 │   Object Store  │
 │  (AWS S3, MinIO,│
-│   Wasabi, etc.) │
+│   Garage, etc.) │
 └─────────────────┘
 ```
 
@@ -365,6 +366,90 @@ From `server/config/s3-dev.json`:
 }
 ```
 
+### Garage (Self-Hosted Alternative to MinIO)
+
+**Garage** is a lightweight S3-compatible object storage system written in Rust. It's a simpler alternative to MinIO for local development and self-hosted deployments.
+
+**Docker Compose setup**:
+
+```yaml
+services:
+  garage:
+    image: dxflrs/garage:v1.0.1
+    command: ["./garage", "server"]
+    ports:
+      - "3900:3900"  # S3 API
+      - "3903:3903"  # Web UI (optional)
+    volumes:
+      - garage_data:/data
+    environment:
+      - RUST_LOG=info
+    networks:
+      - default
+
+volumes:
+  garage_data:
+
+networks:
+  default:
+    name: odk-network
+```
+
+**Initial Garage setup** (run once):
+
+```bash
+# Enter the container
+docker exec -it central-garage-1 sh
+
+# Generate configuration
+garage layout assign -z dc1 -c <node_id> 10G
+
+# Create the S3 API key
+garage key create --name odk-central
+
+# Output will show:
+# Access key: <access_key>
+# Secret key: <secret_key>
+
+# Create bucket
+garage bucket create odk-central-bucket
+
+# Allow key to access bucket
+garage bucket allow odk-central-bucket --read --write --key <key_id>
+```
+
+**ODK Central configuration for Garage**:
+
+```json
+{
+  "external": {
+    "s3blobStore": {
+      "server": "http://garage:3900",
+      "accessKey": "your-garage-access-key",
+      "secretKey": "your-garage-secret-key",
+      "bucketName": "odk-central-bucket",
+      "requestTimeout": 60000
+    }
+  }
+}
+```
+
+**Local development with Garage**:
+
+```json
+{
+  "external": {
+    "s3blobStore": {
+      "server": "http://localhost:3900",
+      "accessKey": "GK<access_key>",
+      "secretKey": "<secret_key>",
+      "bucketName": "odk-central-bucket",
+      "requestTimeout": 60000
+    }
+  }
+}
+```
+
 ## S3-Compatible Services
 
 Tested and compatible with:
@@ -373,9 +458,31 @@ Tested and compatible with:
 |---------|----------------|-------|
 | **AWS S3** | `https://s3.amazonaws.com` | Full compatibility |
 | **MinIO** | `http://localhost:9000` | Self-hosted, dev/staging |
+| **Garage** | `http://localhost:3900` | Lightweight, Rust-based alternative to MinIO |
 | **Wasabi** | `https://s3.wasabisys.com` | Hot cloud storage |
 | **DigitalOcean Spaces** | `https://nyc3.digitaloceanspaces.com` | Region-specific endpoint |
 | **Backblaze B2** | `https://s3.us-west-002.backblazeb2.com` | S3-compatible endpoint |
+
+## MinIO vs Garage for Local Development
+
+| Aspect | MinIO | Garage |
+|--------|-------|--------|
+| **Language** | Go | Rust |
+| **License** | AGPL (commercial license required for some uses) | Dual-licensed: AGPL + commercial available |
+| **Complexity** | More features, more complex setup | Simpler, focused on core S3 functionality |
+| **Resource Usage** | Higher memory footprint | Lower memory footprint |
+| **Setup** | Easy with Docker | Slightly more setup required |
+| **Maturity** | Very mature, widely adopted | Newer, less widely adopted |
+| **Use Case** | Production-like environment, full MinIO features | Lightweight dev environment, simple S3 storage |
+| **S3 API Coverage** | Nearly complete | Core S3 operations (sufficient for ODK Central) |
+
+**Recommendation for Local Development**:
+
+- **Use MinIO if**: You want production-like parity with minimal changes
+- **Use Garage if**: You want a lighter-weight alternative or prefer Rust-based tools
+- **Use Database** (default): For most development, database storage is sufficient
+
+**Note**: ODK Central only uses basic S3 operations (PUT, GET, DELETE), so Garage's focused feature set is perfectly adequate.
 
 ## Troubleshooting
 
@@ -548,7 +655,65 @@ docker compose -f docker-compose.yml \
 
 **Production**: Always use HTTPS endpoints (`https://`)
 
-**Development**: HTTP (`http://`) acceptable for MinIO on localhost
+**Development**: HTTP (`http://`) acceptable for MinIO/Garage on localhost
+
+## Storage Options
+
+ODK Central supports two blob storage options:
+
+| Storage Type | Configuration | Data Location |
+|--------------|---------------|---------------|
+| **Database** (default) | Don't configure S3 | `blobs.content` column (PostgreSQL binary) |
+| **S3-compatible** | Set `s3blobStore` config | External object store |
+
+### Database Storage (Default)
+
+When S3 is **not** configured, blobs are stored directly in PostgreSQL:
+
+```sql
+CREATE TABLE blobs (
+  id serial PRIMARY KEY,
+  sha varchar(40) UNIQUE NOT NULL,
+  content binary NOT NULL,      -- ← Blob data stored here
+  "contentType" text,
+  md5 varchar(32),
+  s3_status varchar              -- 'pending', 'uploaded', 'failed', 'skipped'
+);
+```
+
+**Pros**:
+- Zero configuration required
+- Works out of the box
+- ACID guarantees
+
+**Cons**:
+- Database bloat with large files
+- Performance degradation with many/large files
+- Larger backup sizes
+
+### Filesystem Storage: Not Available
+
+**ODK Central does NOT support local filesystem/blob store**. The only options are:
+1. Database storage (default)
+2. S3-compatible object storage
+
+There is no built-in option to store blobs as files on disk.
+
+**Why no filesystem support?**
+- Docker deployment complexity (mounted volumes, permissions)
+- Backup complexity (database + filesystem)
+- Scaling challenges (shared filesystem required for multiple instances)
+
+**Workaround**: If you need filesystem-like storage for development, use MinIO or Garage in Docker with a mounted volume. The data will be stored as files but accessible via S3 API.
+
+Example with mounted volume:
+```yaml
+services:
+  garage:
+    image: dxflrs/garage:v1.0.1
+    volumes:
+      - ./garage-data:/data  # ← Files stored on host filesystem
+```
 
 ## Migration
 
@@ -574,5 +739,7 @@ There is no built-in migration tool. To migrate existing blobs:
 ## External Resources
 
 - [Minio JavaScript SDK Documentation](https://min.io/docs/minio/linux/developers/javascript/API.html)
+- [Garage Documentation](https://garagehq.deuxfleurs.fr/)
+- [Garage S3 Compatibility](https://garagehq.deuxfleurs.fr/documentation/reference-manual/s3-compatibility.html)
 - [AWS S3 API Reference](https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations.html)
 - [AWS S3 Presigned URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html)
