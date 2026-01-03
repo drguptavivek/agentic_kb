@@ -7,6 +7,7 @@ tags:
   - blob-storage
   - minio
   - garage
+  - rustfs
   - storage
   - architecture
 status: approved
@@ -450,6 +451,221 @@ garage bucket allow odk-central-bucket --read --write --key <key_id>
 }
 ```
 
+### RustFS (High-Performance S3-Compatible Storage)
+
+**RustFS** is a high-performance, 100% S3-compatible distributed object storage system written in Rust. It offers an alternative to MinIO with better performance characteristics.
+
+**Docker Compose setup**:
+
+```yaml
+services:
+  rustfs:
+    image: rustfs/rustfs:latest
+    command: ["/data"]
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Console UI
+    volumes:
+      - rustfs_data:/data
+    environment:
+      - RUSTFS_ACCESS_KEY=rustfsadmin
+      - RUSTFS_SECRET_KEY=rustfsadmin
+      - RUSTFS_CONSOLE_ENABLE=true
+    networks:
+      - default
+
+volumes:
+  rustfs_data:
+
+networks:
+  default:
+    name: odk-network
+```
+
+**Quick start** (simple single-node deployment):
+
+```bash
+docker run -d \
+  --name rustfs_local \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -v /mnt/rustfs/data:/data \
+  -e RUSTFS_ACCESS_KEY=rustfsadmin \
+  -e RUSTFS_SECRET_KEY=rustfsadmin \
+  -e RUSTFS_CONSOLE_ENABLE=true \
+  rustfs/rustfs:latest \
+  /data
+```
+
+**Bucket creation** (via UI, mc client, or API):
+
+1. **Via Web UI**:
+   - Navigate to `http://localhost:9001`
+   - Login with `rustfsadmin` / `rustfsadmin`
+   - Click "Create Bucket" and enter bucket name
+
+2. **Via MinIO Client (mc)**:
+   ```bash
+   # Install mc first
+   mc alias set rustfs http://localhost:9000 rustfsadmin rustfsadmin
+   mc mb rustfs/odk-central-bucket
+   mc ls rustfs
+   ```
+
+3. **Via API**:
+   ```bash
+   curl --location --request PUT 'http://localhost:9000/odk-central-bucket' \
+     --header 'X-Amz-Content-Sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+   ```
+
+**ODK Central configuration for RustFS**:
+
+```json
+{
+  "external": {
+    "s3blobStore": {
+      "server": "http://rustfs:9000",
+      "accessKey": "rustfsadmin",
+      "secretKey": "rustfsadmin",
+      "bucketName": "odk-central-bucket",
+      "requestTimeout": 60000
+    }
+  }
+}
+```
+
+**Local development with RustFS**:
+
+```json
+{
+  "external": {
+    "s3blobStore": {
+      "server": "http://localhost:9000",
+      "accessKey": "rustfsadmin",
+      "secretKey": "rustfsadmin",
+      "bucketName": "odk-central-bucket",
+      "requestTimeout": 60000
+    }
+  }
+}
+```
+
+### Nginx Reverse Proxy for RustFS
+
+For production deployments, use Nginx as a reverse proxy for load balancing, logging, and custom URL handling:
+
+```nginx
+upstream rustfs {
+   least_conn;
+   server 127.0.0.1:9000;
+}
+
+server {
+   listen       8000;
+   listen  [::]:8000;
+   server_name  _;
+
+   # Allow special characters in headers
+   ignore_invalid_headers off;
+   # Allow any size file to be uploaded
+   client_max_body_size 0;
+   # Disable buffering
+   proxy_buffering off;
+   proxy_request_buffering off;
+
+   location / {
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+
+      proxy_connect_timeout 300;
+      proxy_http_version 1.1;
+      proxy_set_header Connection "";
+      chunked_transfer_encoding off;
+
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+
+      proxy_pass http://rustfs;
+   }
+}
+```
+
+**Multi-machine load balancing**:
+
+```nginx
+upstream rustfs {
+   least_conn;
+   server 10.0.0.1:9000;
+   server 10.0.0.2:9000;
+   server 10.0.0.3:9000;
+}
+```
+
+### Environment Variable Configuration (.env)
+
+ODK Central supports configuring S3 via environment variables in `.env` or docker-compose.yml:
+
+```bash
+# .env file for S3 configuration
+S3_SERVER=http://localhost:9000
+S3_ACCESS_KEY=your-access-key
+S3_SECRET_KEY=your-secret-key
+S3_BUCKET_NAME=odk-central-bucket
+```
+
+**Docker Compose example**:
+
+```yaml
+services:
+  service:
+    environment:
+      - S3_SERVER=${S3_SERVER}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY}
+      - S3_SECRET_KEY=${S3_SECRET_KEY}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+```
+
+**Environment variable mapping**:
+
+| JSON Config | Environment Variable | Example |
+|-------------|---------------------|---------|
+| `server` | `S3_SERVER` | `http://localhost:9000` |
+| `accessKey` | `S3_ACCESS_KEY` | `rustfsadmin` |
+| `secretKey` | `S3_SECRET_KEY` | `your-secret-key` |
+| `bucketName` | `S3_BUCKET_NAME` | `odk-central-bucket` |
+
+**Complete .env examples**:
+
+```bash
+# MinIO
+S3_SERVER=http://minio:9000
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=minioadmin
+S3_BUCKET_NAME=odk-central
+
+# Garage
+S3_SERVER=http://garage:3900
+S3_ACCESS_KEY=GKyour-key
+S3_SECRET_KEY=your-secret
+S3_BUCKET_NAME=odk-central
+
+# RustFS
+S3_SERVER=http://rustfs:9000
+S3_ACCESS_KEY=rustfsadmin
+S3_SECRET_KEY=rustfsadmin
+S3_BUCKET_NAME=odk-central
+
+# AWS S3
+S3_SERVER=https://s3.amazonaws.com
+S3_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE
+S3_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+S3_BUCKET_NAME=my-odk-central
+```
+
+**Note**: Environment variables take precedence over JSON configuration files.
+
 ## S3-Compatible Services
 
 Tested and compatible with:
@@ -458,31 +674,36 @@ Tested and compatible with:
 |---------|----------------|-------|
 | **AWS S3** | `https://s3.amazonaws.com` | Full compatibility |
 | **MinIO** | `http://localhost:9000` | Self-hosted, dev/staging |
-| **Garage** | `http://localhost:3900` | Lightweight, Rust-based alternative to MinIO |
+| **Garage** | `http://localhost:3900` | Lightweight, Rust-based |
+| **RustFS** | `http://localhost:9000` | High-performance, Rust-based |
 | **Wasabi** | `https://s3.wasabisys.com` | Hot cloud storage |
 | **DigitalOcean Spaces** | `https://nyc3.digitaloceanspaces.com` | Region-specific endpoint |
 | **Backblaze B2** | `https://s3.us-west-002.backblazeb2.com` | S3-compatible endpoint |
 
-## MinIO vs Garage for Local Development
+## S3-Compatible Storage Comparison
 
-| Aspect | MinIO | Garage |
-|--------|-------|--------|
-| **Language** | Go | Rust |
-| **License** | AGPL (commercial license required for some uses) | Dual-licensed: AGPL + commercial available |
-| **Complexity** | More features, more complex setup | Simpler, focused on core S3 functionality |
-| **Resource Usage** | Higher memory footprint | Lower memory footprint |
-| **Setup** | Easy with Docker | Slightly more setup required |
-| **Maturity** | Very mature, widely adopted | Newer, less widely adopted |
-| **Use Case** | Production-like environment, full MinIO features | Lightweight dev environment, simple S3 storage |
-| **S3 API Coverage** | Nearly complete | Core S3 operations (sufficient for ODK Central) |
+| Aspect | MinIO | Garage | RustFS |
+|--------|-------|--------|--------|
+| **Language** | Go | Rust | Rust |
+| **License** | AGPL (commercial license required) | Dual-licensed: AGPL + commercial | AGPL (open-source) |
+| **Complexity** | More features, more complex | Focused on core S3 functionality | High-performance, enterprise features |
+| **Resource Usage** | Higher memory footprint | Lower memory footprint | Optimized for performance |
+| **Setup** | Easy with Docker | Slightly more setup required | Quick start with Docker |
+| **Maturity** | Very mature, widely adopted | Newer, less widely adopted | Newer, rapidly developing |
+| **Use Case** | Production-like, full MinIO features | Lightweight dev, simple S3 | High-performance scenarios |
+| **S3 API Coverage** | Nearly complete | Core operations (sufficient) | Core operations (sufficient) |
+| **Default Port** | 9000 | 3900 | 9000 |
+| **Console UI** | Yes (port 9001) | Yes (port 3903) | Yes (port 9001) |
+| **Default Credentials** | minioadmin/minioadmin | Generated on setup | rustfsadmin/rustfsadmin |
 
 **Recommendation for Local Development**:
 
-- **Use MinIO if**: You want production-like parity with minimal changes
-- **Use Garage if**: You want a lighter-weight alternative or prefer Rust-based tools
+- **Use MinIO if**: You want production-like parity with minimal changes, most widely used
+- **Use Garage if**: You want a lighter-weight alternative or prefer simpler setup
+- **Use RustFS if**: You need high-performance storage or prefer Rust-based tools with UI console
 - **Use Database** (default): For most development, database storage is sufficient
 
-**Note**: ODK Central only uses basic S3 operations (PUT, GET, DELETE), so Garage's focused feature set is perfectly adequate.
+**Note**: ODK Central only uses basic S3 operations (PUT, GET, DELETE), so any of these solutions' focused feature sets are perfectly adequate.
 
 ## Troubleshooting
 
@@ -741,5 +962,9 @@ There is no built-in migration tool. To migrate existing blobs:
 - [Minio JavaScript SDK Documentation](https://min.io/docs/minio/linux/developers/javascript/API.html)
 - [Garage Documentation](https://garagehq.deuxfleurs.fr/)
 - [Garage S3 Compatibility](https://garagehq.deuxfleurs.fr/documentation/reference-manual/s3-compatibility.html)
+- [RustFS Documentation](https://docs.rustfs.com/)
+- [RustFS Docker Installation](https://docs.rustfs.com/installation/docker/)
+- [RustFS Bucket Creation](https://docs.rustfs.com/management/bucket/creation.html)
+- [RustFS Nginx Integration](https://docs.rustfs.com/integration/nginx.html)
 - [AWS S3 API Reference](https://docs.aws.amazon.com/AmazonS3/latest/API/API_Operations.html)
 - [AWS S3 Presigned URLs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html)
