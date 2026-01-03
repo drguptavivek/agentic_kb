@@ -17,6 +17,175 @@ updated: 2026-01-03
 
 # S3 Blob Storage Architecture
 
+## Quickstart: Local S3 with Garage (5 Minutes)
+
+Complete setup to run ODK Central with local S3-compatible storage using Garage.
+
+### Step 1: Create `docker-compose-garage.yml`
+
+```yaml
+version: '3.8'
+
+services:
+  garage:
+    image: dxflrs/garage:v1.0.1
+    container_name: odk-garage
+    command: ["./garage", "server"]
+    ports:
+      - "3900:3900"  # S3 API
+      - "3903:3903"  # Web UI
+    volumes:
+      - garage_data:/data
+    environment:
+      - RUST_LOG=info
+    networks:
+      - odk-net
+
+  # Uncomment to recreate service container with S3 env vars
+  # service:
+  #   container_name: odk-service
+  #   environment:
+  #     - S3_SERVER=http://garage:3900
+  #     - S3_ACCESS_KEY=${GARAGE_ACCESS_KEY}
+  #     - S3_SECRET_KEY=${GARAGE_SECRET_KEY}
+  #     - S3_BUCKET_NAME=odk-central
+  #   networks:
+  #     - odk-net
+
+volumes:
+  garage_data:
+
+networks:
+  odk-net:
+    driver: bridge
+```
+
+### Step 2: Start Garage
+
+```bash
+docker compose -f docker-compose-garage.yml up -d garage
+
+# Wait for Garage to start
+docker logs -f odk-garage
+# Press Ctrl+C when you see "server started"
+```
+
+### Step 3: Configure Garage and Create Bucket
+
+```bash
+# Enter the Garage container
+docker exec -it odk-garage garage CLI
+
+# Inside Garage CLI:
+# 1. Initialize the cluster layout
+garage layout assign -z dc1 -c garage1 10G
+
+# 2. Apply the layout
+garage layout apply
+
+# 3. Create a bucket
+garage bucket create odk-central
+
+# 4. Create an API key for ODK Central
+garage key create --name odk-central
+
+# 5. Note the output - you'll need these values:
+#    Key ID: GKxxxx...       <- Save this as GARAGE_ACCESS_KEY
+#    Secret key: xxxxx...    <- Save this as GARAGE_SECRET_KEY
+
+# 6. Allow the key to read/write the bucket
+garage bucket allow odk-central --read --write --key <key-id-from-above>
+
+# Exit CLI
+exit
+```
+
+### Step 4: Create `.garage.env`
+
+Create a `.garage.env` file in your ODK Central directory:
+
+```bash
+# Garage S3 Configuration
+GARAGE_ACCESS_KEY=GKxxxx...
+GARAGE_SECRET_KEY=xxxxx...
+S3_SERVER=http://garage:3900
+S3_BUCKET_NAME=odk-central
+```
+
+### Step 5: Update ODK Central `.env`
+
+Add to your existing `.env` file or `docker-compose.yml`:
+
+**Option A: Via .env file**
+```bash
+# Add to existing .env
+S3_SERVER=http://garage:3900
+S3_ACCESS_KEY=GKxxxx...
+S3_SECRET_KEY=xxxxx...
+S3_BUCKET_NAME=odk-central
+```
+
+**Option B: Via docker-compose override**
+Create or update `docker-compose.override.yml`:
+```yaml
+services:
+  service:
+    environment:
+      - S3_SERVER=http://garage:3900
+      - S3_ACCESS_KEY=GKxxxx...
+      - S3_SECRET_KEY=xxxxx...
+      - S3_BUCKET_NAME=odk-central
+    networks:
+      - odk-net
+    depends_on:
+      - garage
+```
+
+### Step 6: Restart ODK Central Service
+
+```bash
+# Restart only the service container
+docker compose up -d service
+
+# Or if using docker-compose.override.yml:
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d service
+
+# Verify S3 connection
+docker logs -f odk-service | grep -i s3
+# Press Ctrl+C to stop following logs
+```
+
+### Step 7: Verify
+
+```bash
+# 1. Check Garage is running
+docker ps | grep garage
+
+# 2. Check Garage bucket
+docker exec -it odk-garage garage bucket list
+
+# 3. Check ODK Central logs
+docker logs odk-service --tail=50 | grep -i s3
+
+# 4. Upload a test attachment via ODK Central web UI
+#    and verify it appears in S3 (not in database)
+docker exec -it odk-postgres14-1 psql -U odk -d odk -c "
+  SELECT id, s3_status, length(content)
+  FROM blobs
+  ORDER BY id DESC
+  LIMIT 5;
+"
+# s3_status should be 'uploaded' and content should be NULL
+```
+
+### Web UI
+
+Access Garage web UI at: http://localhost:3903
+- Login: not required for local dev
+- View buckets and objects
+
+---
+
 ## Overview
 
 ODK Central supports storing binary blobs (attachments, form media files) in S3-compatible object storage instead of the database. This is implemented using the Minio Node.js client library and provides a **simple, key/endpoint-based implementation** rather than advanced S3 features.
