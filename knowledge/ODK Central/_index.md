@@ -15,6 +15,7 @@ updated: 2026-01-03
 ## Architecture & Patterns
 
 - [[enketo-redis-secrets-architecture]] - How Enketo secrets, Redis, and Docker containers interact
+- [[pyxform-xlsform-architecture]] - PyXForm/XLSForm conversion service architecture
 - [[server-architecture-patterns]] - Backend architecture patterns
 - [[client-ui-patterns]] - Frontend UI patterns and conventions
 - [[client-map-patterns]] - Map component patterns and usage
