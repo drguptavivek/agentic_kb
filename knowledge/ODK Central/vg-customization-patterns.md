@@ -380,7 +380,7 @@ service.get('/system/app-users/telemetry', endpoint(
 - Dev proxy defaults to `https://central.local`
 - Self-signed cert with SANs for `DOMAIN` and `EXTRA_SERVER_NAME`
 
-**Configuration**: `docker-compose.dev.yml` overrides
+**Configuration**: `docker-compose.vg-dev.yml` overrides
 
 ## Related
 

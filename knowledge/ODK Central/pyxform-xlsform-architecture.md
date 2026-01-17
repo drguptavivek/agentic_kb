@@ -61,12 +61,10 @@ pyxform:
 
 ### Development Configuration
 
-From `docker-compose.dev.yml`:
+From `docker-compose.vg-dev.yml`:
 
 ```yaml
 pyxform:
-  profiles:
-    - central
   ports:
     - 5001:80  # Exposed on localhost:5001 for dev
 ```
@@ -294,7 +292,7 @@ docker exec central-service-1 npm test -- test/integration/api/forms/forms.js
 **Development only**: If port 5001 is already in use:
 
 ```yaml
-# Change in docker-compose.dev.yml
+# Change in docker-compose.vg-dev.yml
 pyxform:
   ports:
     - 5002:80  # Use different port

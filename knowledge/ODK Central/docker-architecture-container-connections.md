@@ -327,7 +327,7 @@ docker compose up
 
 ### Development
 ```bash
-docker compose --profile central up
+docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.vg-dev.yml up -d
 ```
 - Exposed ports (5432, 5001, 8005, 6379, 6380)
 - Pre-generated dev secrets

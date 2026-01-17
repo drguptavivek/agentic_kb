@@ -82,7 +82,7 @@ fi
 
 ### Development Environment
 
-**WARNING**: Development setup uses hardcoded insecure secrets. From `docker-compose.dev.yml:43`:
+**WARNING**: Development setup uses hardcoded insecure secrets. From `docker-compose.vg-dev.yml:43`:
 
 ```bash
 echo "s0m3v3rys3cr3tk3y" > enketo-secret
@@ -230,7 +230,7 @@ docker inspect central-enketo-1 | grep -A5 '"secrets"'
 
 | Aspect | Production | Development |
 |--------|------------|-------------|
-| **Secret Source** | Randomly generated at startup | Hardcoded in docker-compose.dev.yml |
+| **Secret Source** | Randomly generated at startup | Hardcoded in docker-compose.vg-dev.yml |
 | **Persistence** | Docker volume (persistent across restarts) | Reset on container rebuild |
 | **Security** | Cryptographically random | Insecure (for testing only) |
 | **Volume Name** | `secrets` | `dev_secrets` |
