@@ -1,7 +1,7 @@
 ---
 title: VG Client UI Customization Patterns
 type: reference
-domain: ODK Central
+domain: ODK-Central-vg
 tags:
   - odk-central
   - vg-fork

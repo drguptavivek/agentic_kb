@@ -1,7 +1,7 @@
 ---
 title: VG Customization Patterns for ODK Central
 type: reference
-domain: ODK Central
+domain: ODK-Central-vg
 tags:
   - odk-central
   - vg-fork

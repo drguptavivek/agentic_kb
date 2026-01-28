@@ -3,6 +3,7 @@ title: ODK Central Admin Password QR Code Integration
 created: 2025-12-26
 tags:
   - odk-central
+  - vg-fork
   - admin-settings
   - qr-code
   - vue
@@ -10,6 +11,7 @@ tags:
   - postgresql
 status: approved
 type: reference
+domain: ODK-Central-vg
 ---
 
 # ODK Central Admin Password QR Code Integration
@@ -198,7 +200,6 @@ Expected output includes:
 
 ## Related Articles
 
-- [[client-ui-patterns]] - Vue component patterns used in implementation
-- [[server-architecture-patterns]] - Query layer and API patterns
-- [[app-user-session-date-handling]] - Related session settings management
+- [[ODK-Central-vg/client-ui-patterns]] - Vue component patterns used in implementation
+- [[ODK-Central-vg/app-user-session-date-handling]] - Related session settings management
 
