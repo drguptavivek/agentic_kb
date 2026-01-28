@@ -1,7 +1,7 @@
 ---
 title: Troubleshooting VG Customization Issues
 type: reference
-domain: ODK Central
+domain: ODK-Central-vg
 tags:
   - odk-central
   - vg-fork

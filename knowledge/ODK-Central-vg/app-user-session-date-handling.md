@@ -1,8 +1,10 @@
 ---
 title: App User Session Date Handling in ODK Central Server
 type: reference
-domain: ODK Central
+domain: ODK-Central-vg
 tags:
+  - odk-central
+  - vg-fork
   - app-users
   - sessions
   - slonik
@@ -200,6 +202,5 @@ expires_at| 2025-12-29 07:43:40.944+00 (from normalized ISO string)
 
 ## Related
 
-- [[slonik-date-handling-debugging]] - General Slonik date handling patterns
-- [[vg-app-user-auth-flow]] - Complete app user authentication flow
-- [[app-user-sessions-api]] - Session management API endpoints
+- [[ODK-Central-vg/app-user-api]] - Session management API endpoints
+- [[ODK-Central-vg/implementation]] - VG app user auth implementation
