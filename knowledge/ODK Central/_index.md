@@ -7,7 +7,7 @@ tags:
   - index
 status: approved
 created: 2026-01-03
-updated: 2026-01-03
+updated: 2026-01-28
 ---
 
 # ODK Central — Index
@@ -21,6 +21,10 @@ updated: 2026-01-03
 - [[client-ui-patterns]] - Frontend UI patterns and conventions
 - [[client-map-patterns]] - Map component patterns and usage
 - [[vg-customization-patterns]] - VG-specific customization patterns
+
+## API Reference
+
+- [[api-reference]] - Authentication, projects, forms, submissions, and attachments API endpoints
 
 ## Features & Customizations
 
