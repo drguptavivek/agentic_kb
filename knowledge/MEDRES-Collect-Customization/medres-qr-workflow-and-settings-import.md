@@ -42,6 +42,36 @@ The app monitors the current configuration and triggers specific actions if a ne
 ## Project UUID Generation
 Internal ODK Project UUIDs are generated using `UUID.randomUUID()` at the moment of first configuration (QR scan). This UUID is essential for file naming in SharedPreferences (`general_prefs{projectUUID}`).
 
+## Security Protections
+
+MEDRES implements defense-in-depth security for all QR codes:
+
+### Payload Size Limits
+- **Compressed**: 4KB max (DoS prevention)
+- **Decompressed**: 16KB max (decompression bomb prevention)
+- **Compression Ratio**: 4:1 maximum
+
+### Key Validation
+- **General Settings**: Whitelist validation against `ProjectKeys`
+- **Admin Settings**: Whitelist validation against `ProtectedProjectKeys`
+- **Invalid Keys**: Logged and rejected (prevents injection)
+
+### Type Safety
+- Boolean, String, Integer type checking
+- Admin settings must be boolean only
+- Type mismatches logged and rejected
+
+### Sensitive Key Protection
+Blocked from QR override: `server_url`, `username`, `password`, `protocol`
+
+### Attack Prevention
+All QR types (MEDRES, Demo, Standard ODK) are protected against:
+- Decompression bombs (4KB → gigabytes)
+- Malicious key injection
+- Credential theft via QR
+- OOM/ANR crashes
+- Type confusion attacks
+
 ## Related Content
 - [[medres-authentication-architecture]]
 - [[medres-multiuser-persistence-strategy]]

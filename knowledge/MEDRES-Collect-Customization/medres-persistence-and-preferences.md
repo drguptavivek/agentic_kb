@@ -354,11 +354,40 @@ Settings are only applied **AFTER** a successful login to prevent unauthorized c
 4.  **Settings Application ("The Import Loop")**:
     *   The app reads the `qr_general_settings` JSON string from `medres_auth_prefs`.
     *   It opens the `general_prefs_[UUID]` file for the specific ODK Project.
+    *   **Key Validation**: Each key is validated against `ProjectKeys` constants using reflection. Invalid keys are logged and skipped.
     *   **Dynamic Usage**: It iterates through **ALL** keys present in the JSON object (e.g., `autosend`, `navigation`, `image_size`) and applies them directly to the preferences file, respecting their data types (Boolean, String, Integer).
     *   **Safeguard**: Sensitive keys like `server_url`, `username`, and `password` are skipped during this loop as they are handled explicitly by the specialized login logic.
     *   **Server Injection**: The `server_url` is constructed securely (`.../v1/key/[Token]/projects/[ID]`) and written separately to ensure connectivity.
 
 #### Stage 3: Admin Lock Application
-Admin settings (from the `admin` object in the QR) follow a similar path but target the `admin_prefs_[UUID]` file.
-*   These booleans (e.g., `change_autosend`: `false`) are written to the admin preferences.
-*   The ODK UI layer reads these preferences to determine visibility of menus and settings buttons.
+Admin settings (from the `admin` object in the QR) are applied immediately after general settings.
+*   **Validation**: Each admin key is validated against `ProtectedProjectKeys.allKeys()` before application. Invalid keys are logged and skipped.
+*   **Target**: Settings are written to `admin_prefs_[UUID]` file for the specific ODK Project.
+*   **Type Enforcement**: Only boolean values are accepted (admin settings are all boolean flags). Non-boolean values are logged and skipped.
+*   **UI Effect**: The ODK UI layer reads these preferences to determine visibility of menus and settings buttons. For example, `change_autosend: false` hides the autosend setting from the user.
+*   **Security**: The validation ensures that only known admin keys from `ProtectedProjectKeys` can be applied, preventing injection of malicious or invalid settings.
+
+#### Security Summary
+
+The QR code processing pipeline implements defense-in-depth security:
+
+| Security Layer | Protection Against | Implementation |
+|---------------|-------------------|----------------|
+| **Payload Size Limit** | Oversized QR codes, DoS attacks | Max 4KB compressed payload |
+| **Decompression Bomb Protection** | Zip bomb attacks, OOM crashes | Max 16KB decompressed (4:1 ratio) |
+| **QR Type Detection** | Accidental ODK Central overwrites | Rejects Standard ODK QRs with `/key/` tokens |
+| **Key Validation** | Malicious setting injection | Whitelist validation against `ProjectKeys` & `ProtectedProjectKeys` |
+| **Type Safety** | Data corruption, crashes | Type checking for Boolean, String, Integer values |
+| **Sensitive Key Protection** | Credential theft, server hijacking | Blocks `server_url`, `username`, `password` from QR override |
+| **Context Binding** | Cross-project contamination | Settings only applied to matching Project ID |
+| **Post-Auth Execution** | Unauthorized configuration | Settings applied only after successful login |
+
+**Attack Scenarios Prevented:**
+- ❌ Decompression bombs (4KB → gigabytes)
+- ❌ Malicious key injection (`"evil_setting": "value"`)
+- ❌ Standard ODK QR overwrites
+- ❌ Cross-project setting leakage
+- ❌ Credential theft via QR
+- ❌ Type confusion attacks
+- ❌ OOM/ANR crashes
+
