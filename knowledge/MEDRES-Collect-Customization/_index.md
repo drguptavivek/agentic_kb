@@ -18,6 +18,9 @@ This domain covers the custom authentication, security, and telemetry systems im
 - [[medres-architectural-boundaries]]: Technical isolation and module dependencies.
 - [[medres-authentication-architecture]]: Token lifecycle and state machine.
 - [[medres-persistence-and-preferences]]: Tiered storage and preference mapping.
+- [[medres-data-isolation-and-security]]: Encryption, storage tiers, and cleanup (Option B).
+- [[medres-multiuser-persistence-strategy]]: Shared device support and project reuse.
+- [[medres-qr-workflow-and-settings-import]]: Payload format and behavioral changes.
 - [[medres-telemetry-and-logging]]: Offline-first event tracking and diagnostic logging.
 
 ## Knowledge Captured

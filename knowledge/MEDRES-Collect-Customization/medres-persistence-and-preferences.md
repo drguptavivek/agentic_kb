@@ -23,9 +23,12 @@ MEDRES ODK Collect uses a combination of custom MEDRES-specific SharedPreference
 - **medres_auth_prefs**: Stores non-sensitive global state, project metadata, and staged configuration. (Private SharedPreferences).
 - **medres_auth_secure**: Stores sensitive data (tokens, PIN hashes) using `EncryptedSharedPreferences` (AES-256-GCM).
 
-### Standard ODK Storage
-- **meta**: Core application metadata (e.g., `current_project_id`).
-- **general_prefs[UUID]**: Settings for a specific ODK project.
+## Standard ODK Storage
+- **meta**: Global metadata (`current_project_id`, `projects`).
+- **general_prefs{projectUUID}**: Settings for a specific ODK project (`server_url`, `username`).
+- **admin_prefs{projectUUID}**: Admin-protected settings (`admin_pw`).
+
+> **Naming Rule**: ODK uses a random UUID for projects. Always use `general_prefs$projectUUID` instead of package-based preference naming.
 
 ## Key Persistence Concepts
 
