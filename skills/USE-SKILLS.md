@@ -604,6 +604,7 @@ If you prefer using the scripts directly:
 # Smart search (auto-fallback)
 ./scripts/smart_search.sh "pandoc page numbers"
 ./scripts/smart_search.sh "git workflows" --filter "domain:Git"
+./scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
 
 # Typesense search
 uv run --with typesense python scripts/search_typesense.py \

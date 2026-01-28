@@ -84,12 +84,13 @@ If you want to use the scripts directly:
 # Setup KB (first time)
 scripts/setup_kb.sh --read-only  # or without flag for fork mode
 
-# Update KB (each session)
-scripts/update_kb.sh
+# Update KB (each session, auto-detects KB path)
+scripts/update_kb.sh [kb_path]
 
-# Search KB (smart search with fallback)
+# Search KB (smart search with fallback, auto-detects KB path)
 scripts/smart_search.sh "your query"
 scripts/smart_search.sh "pandoc" --filter "domain:Document Automation"
+scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
 ```
 
 ## Typesense Setup (Recommended)

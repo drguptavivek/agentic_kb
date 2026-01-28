@@ -32,6 +32,12 @@ agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howt
 
 # Higher similarity threshold for FAISS fallback
 agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
+
+# If auto-detection fails, pass the KB path explicitly
+agentic_kb/scripts/smart_search.sh "your query" --kb-path agentic_kb
+
+# Direct repo usage
+scripts/smart_search.sh "your query"
 ```
 
 **Benefits:**

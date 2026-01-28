@@ -139,6 +139,7 @@ The skill uses these scripts under the hood, but you can also run them manually:
 # Smart search (Typesense -> FAISS fallback)
 ./scripts/smart_search.sh "your query"
 ./scripts/smart_search.sh "pandoc" --filter "domain:Document Automation"
+./scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
 
 # Typesense search
 uv run --with typesense python scripts/search_typesense.py "query" --filter "domain:Search"
@@ -155,9 +156,9 @@ rg "pattern" knowledge/
 
 At the start of each Claude Code session:
 
-1. **Update KB submodule** (if using as submodule):
+1. **Update KB** (auto-detects KB path):
    ```bash
-   ./scripts/update_kb.sh
+   ./scripts/update_kb.sh [kb_path]
    ```
 
 2. **Search before answering**:

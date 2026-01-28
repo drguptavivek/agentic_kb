@@ -110,13 +110,19 @@ If they choose Typesense, offer to set it up and index the KB. If they choose FA
 
 **CRITICAL**: At the start of each session, update the KB to ensure access to latest knowledge.
 
-If the parent repo includes `agentic_kb/scripts/update_kb.sh`, run it:
+If the parent repo includes the submodule, run the update script (auto-detects KB path):
 
 ```bash
 agentic_kb/scripts/update_kb.sh [submodule_path]
 ```
 
-If the KB was set up as a direct clone (not a submodule), or if the update script is missing, pull updates directly:
+If you're in the KB repo directly, use:
+
+```bash
+scripts/update_kb.sh [kb_path]
+```
+
+If the update script is missing, pull updates directly:
 
 ```bash
 git -C agentic_kb pull
@@ -131,10 +137,10 @@ git -C agentic_kb pull
 
 ### Smart Search (Recommended)
 
-Use the smart search script that tries Typesense first, falls back to FAISS:
+Use the smart search script that tries Typesense first, falls back to FAISS (auto-detects KB path):
 
 ```bash
-agentic_kb/scripts/smart_search.sh "your query" [--filter "filter_expr"] [--min-score 0.8]
+agentic_kb/scripts/smart_search.sh "your query" [--filter "filter_expr"] [--min-score 0.8] [--kb-path PATH]
 ```
 
 Examples:
@@ -147,6 +153,9 @@ agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howt
 
 # Higher similarity threshold for FAISS fallback
 agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
+
+# If auto-detection fails
+agentic_kb/scripts/smart_search.sh "your query" --kb-path agentic_kb
 ```
 
 ## Search Methods
@@ -389,8 +398,10 @@ cd ..
 
 ### scripts/
 
-- `agentic_kb/scripts/update_kb.sh` - Update KB submodule to latest version
-- `agentic_kb/scripts/smart_search.sh` - Intelligent search with Typesense → FAISS fallback
+- `agentic_kb/scripts/update_kb.sh` - Update KB (submodule usage)
+- `scripts/update_kb.sh` - Update KB (direct repo usage; auto-detects path)
+- `agentic_kb/scripts/smart_search.sh` - Smart search (submodule usage)
+- `scripts/smart_search.sh` - Smart search (direct repo usage; auto-detects path)
 
 ### references/
 

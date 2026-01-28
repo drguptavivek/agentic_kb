@@ -33,6 +33,9 @@ agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howt
 
 # Higher similarity threshold for FAISS fallback
 agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
+
+# If auto-detection fails, pass the KB path explicitly
+agentic_kb/scripts/smart_search.sh "your query" --kb-path agentic_kb
 ```
 
 **Performance**: Combines Typesense speed (10-50ms) with FAISS semantic understanding (100-500ms fallback).
@@ -143,8 +146,8 @@ For search setup and examples:
 **At session start**:
 1. **Update KB submodule**: Pull latest knowledge and update pointer in parent project:
    ```bash
-   # Recommended: Use the update script
-   agentic_kb/scripts/update_kb.sh
+   # Recommended: Use the update script (auto-detects KB path)
+   agentic_kb/scripts/update_kb.sh [submodule_path]
 
    # Or manually:
    git submodule update --remote agentic_kb

@@ -31,7 +31,10 @@ For detailed setup options, see `GIT_WORKFLOWS.md`.
 **CRITICAL**: At the start of each session, agents MUST update the KB to ensure access to the latest knowledge:
 
 ```bash
-# If KB is a submodule, use the update script:
+# Auto-detect KB path (works for direct repo or submodule):
+scripts/update_kb.sh
+
+# If KB is a submodule and you're in the parent repo:
 agentic_kb/scripts/update_kb.sh
 
 # Or manually update submodule:
@@ -67,7 +70,7 @@ This ensures:
 
 ## Smart Search (Recommended)
 
-Use the smart search script that automatically tries Typesense first, then falls back to FAISS:
+Use the smart search script that automatically tries Typesense first, then falls back to FAISS (auto-detects KB path):
 
 ```bash
 # If KB is a submodule:
@@ -78,6 +81,9 @@ agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
 # If KB is the main repo:
 scripts/smart_search.sh "your query"
 scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
+
+# If auto-detection fails:
+scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
 ```
 
 **Performance**: Combines the speed of Typesense (10-50ms) with the semantic understanding of FAISS (100-500ms) as fallback.
