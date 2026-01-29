@@ -1,5 +1,5 @@
 ---
-title: SvelteKit Remote Functions (Experimental)
+title: SvelteKit Remote Functions with ZOD & Standard Schema
 type: reference
 domain: Development Tools
 tags:
@@ -8,13 +8,15 @@ tags:
   - remote-functions
   - server
   - validation
+  - zod
+  - standard-schema
   - experimental
 status: approved
 created: 2025-12-25
-updated: 2025-12-25
+updated: 2025-01-29
 ---
 
-# SvelteKit Remote Functions (Experimental)
+# SvelteKit Remote Functions with ZOD & Standard Schema
 
 ## Overview
 
@@ -76,6 +78,376 @@ Inside remote functions, `getRequestEvent` is available, but some `RequestEvent`
 ## Redirects
 
 `redirect(...)` is allowed inside `query`, `form`, and `prerender`. It is not allowed inside `command`; if needed, return `{ redirect: location }` and handle it on the client. <https://svelte.dev/docs/kit/remote-functions#Redirects>
+
+## Standard Schema & ZOD Integration
+
+### What is Standard Schema?
+
+Standard Schema is a common interface specification designed by the creators of Zod, Valibot, and ArkType. It allows ecosystem tools (like SvelteKit) to accept user-defined type validators without needing custom adapters for each library. The specification is defined at `@standard-schema/spec` and guarantees no breaking changes without a major version bump. <https://standardschema.dev>
+
+**Compatible Libraries:**
+- **Zod** (3.24.0+) - Most popular, TypeScript-first schema validation
+- **Valibot** (v1.0+) - Modular, smaller bundle size
+- **ArkType** (v2.0+) - Type-level validation
+- And 20+ more libraries (yup, joi, Effect Schema, etc.) <https://standardschema.dev>
+
+### Why Validation is Critical
+
+Every remote function becomes a publicly accessible HTTP endpoint. **Input validation is not optional—it's essential for security.** Without validation, attackers can send arbitrary data to your endpoints. SvelteKit returns 400-level errors for validation failures, avoiding information leakage. <https://blog.openreplay.com/beginner-guide-remote-functions-sveltekit/>
+
+### ZOD Validation Patterns
+
+#### Basic Query with ZOD
+
+```typescript
+// src/lib/remote/posts.remote.ts
+import { query } from '$app/server';
+import * as z from 'zod';
+import { db } from '$lib/db';
+import { posts } from '$lib/schema';
+
+const Params = z.object({
+  slug: z.string().min(1)
+});
+
+export const getPost = query(Params, async ({ slug }) => {
+  return await db.select().from(posts).where(eq(posts.slug, slug));
+});
+```
+
+#### Form Validation with ZOD
+
+```typescript
+// src/lib/remote/forms.remote.ts
+import { form } from '$app/server';
+import * as z from 'zod';
+
+const PostSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().min(10, 'Content must be at least 10 characters'),
+  published: z.boolean().optional()
+});
+
+export const createPost = form(PostSchema, async (data, invalid) => {
+  // Data is validated and typed here
+  const post = await db.insert(posts).values(data).returning();
+  return post[0];
+});
+```
+
+#### Client-Side Form Usage
+
+```svelte
+<!-- src/routes/blog/new/+page.svelte -->
+<script>
+  import { createPost } from '$lib/remote/forms.remote';
+</script>
+
+<form {...createPost}>
+  <label>
+    Title
+    <input name="title" type="text" required />
+  </label>
+  <label>
+    Content
+    <textarea name="content" required></textarea>
+  </label>
+  <label>
+    <input name="published" type="checkbox" />
+    Published
+  </label>
+  <button>Publish!</button>
+</form>
+```
+
+### Imperative Validation with `invalid()`
+
+Sometimes you need to validate a form schema that requires additional data (e.g., checking if a user exists in the database). Use the `invalid` method to report custom validation issues:
+
+```typescript
+// Using async refinement in schema
+const userId = z.string().refine(async (id) => {
+  return await userExists(id);
+}, 'User not found');
+
+export const someForm = form(z.object({ userId }), async (output) => {
+  // ...
+});
+
+// OR using the invalid() method for more control
+export const someForm = form(z.object({ userId: z.string() }), async (output, invalid) => {
+  const user = await getUser(output.userId);
+  if (!user) throw invalid(invalid.userId('User not found'));
+  // ...
+});
+```
+
+### Deferred Validation
+
+If you want to fetch data before schema validation:
+
+```typescript
+async function safeParse<I, O>(schema: StandardSchemaV1<I, O>, input: I) {
+  const result = await schema['~standard'].validate(input);
+  if (result.issues) return { success: false, issues: result.issues } as const;
+  else return { success: true, output: result.value } as const;
+}
+
+export const someForm = form('unchecked', async (input: ExpectedInputType, invalid) => {
+  const user = await getUser(input.userId);
+  const schema = getUserSpecificSchema(user); // Schema depends on fetched data
+  const result = await safeParse(schema, input);
+  if (!result.success) throw invalid(...result.issues);
+});
+```
+
+### Form Field Types
+
+Remote forms only send `FormData` to the server. Supported input types are:
+- `string`, `string[]`
+- `number`, `boolean` (checkbox inputs)
+- `File`, `File[]`
+- `undefined` (for conditionally rendered or unchecked checkbox fields)
+
+**Important:** Coercion to other output types must be handled by your schema. Unlike Superforms, remote forms do not automatically coerce values to `null`, `Date`, etc. <https://matt.dekok.app/blog/sveltekit-remote-functions/>
+
+### Handling Dates
+
+Dates are tricky because timezone conversion happens on the server. **Best practice:** Convert to UNIX timestamp on the client or include timezone as a hidden input.
+
+```typescript
+// utils.ts
+export function appendTimezone(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) throw new Error('Invalid date string');
+
+  const offsetMinutes = date.getTimezoneOffset();
+  const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+  const offsetMins = Math.abs(offsetMinutes) % 60;
+  const sign = offsetMinutes <= 0 ? '+' : '-';
+  const timezone = `${sign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+
+  if (dateString.includes('T')) {
+    return `${dateString}${timezone}`;
+  } else {
+    return `${dateString}T00:00:00${timezone}`;
+  }
+}
+```
+
+```svelte
+<!-- form.svelte -->
+<script>
+  import { testForm } from '$lib/remote/forms.remote';
+  import { appendTimezone } from '$lib/utils';
+  let date = $state('');
+</script>
+
+<form {...testForm}>
+  <!-- Only the hidden input is submitted to the server -->
+  <input type="date" bind:value={date} />
+  <input {...testForm.fields.date.as("hidden", appendTimezone(date))} />
+  <button type="submit">Submit</button>
+</form>
+```
+
+## Advanced Patterns
+
+### Discriminated Unions
+
+Because `form.fields` is a proxy object, you need type assertions for discriminated unions:
+
+```typescript
+// forms.remote.ts
+import * as v from 'valibot';
+
+export const typeA = v.object({
+  propA: v.string(),
+});
+
+export const typeB = v.object({
+  propB: v.number(),
+});
+
+export const schema = v.object({
+  diff: v.variant('type', [
+    v.object({
+      type: v.literal('a'),
+      ...typeA.entries,
+    }),
+    v.object({
+      type: v.literal('b'),
+      ...typeB.entries,
+    }),
+  ]),
+});
+```
+
+```svelte
+<!-- template.svelte -->
+{#if myForm.fields.diff.type.value() == "a"}
+  {@const diff = myForm.fields.diff as RemoteFormFields<TypeA>}
+  PropA: <input {...diff.propA.as("text")}>
+{:else}
+  {@const diff = myForm.fields.diff as RemoteFormFields<TypeB>}
+  PropB: <input {...diff.propB.as("number")}>
+{/if}
+```
+
+### Guarded Remote Functions (Auth Pattern)
+
+Create wrapper functions that ensure authentication before executing:
+
+```typescript
+// $lib/server/remote.ts
+import { command, form, getRequestEvent, query } from "$app/server";
+import type { StandardSchemaV1 } from "@standard-schema/spec";
+import { redirect, type Invalid, type RemoteCommand, type RemoteForm, type RemoteFormInput, type RemoteQueryFunction, type RequestEvent } from "@sveltejs/kit";
+
+const LOGINPAGE = "/";
+
+function isStandardSchema(schema: unknown): schema is StandardSchemaV1 {
+  return typeof schema === "object" && schema !== null && "~standard" in schema;
+}
+
+export function guardedQuery<Schema extends StandardSchemaV1, Output>(
+  schema: Schema,
+  fn: (
+    output: StandardSchemaV1.InferOutput<Schema>,
+    auth: { user: NonNullable<App.Locals["user"]>; event: RequestEvent }
+  ) => Promise<Output>
+): RemoteQueryFunction<StandardSchemaV1.InferInput<Schema>, Promise<Output>>;
+
+export function guardedQuery<Output>(
+  fn: (auth: { user: NonNullable<App.Locals["user"]>; event: RequestEvent }) => Promise<Output>
+): RemoteQueryFunction<void, Promise<Output>>;
+
+export function guardedQuery<Schema extends StandardSchemaV1, Output>(
+  schemaOrFn: Schema | ((auth: { user: NonNullable<App.Locals["user"]>; event: RequestEvent }) => Promise<Output>),
+  maybeFn?: (
+    output: StandardSchemaV1.InferOutput<Schema>,
+    auth: { user: NonNullable<App.Locals["user"]>; event: RequestEvent }
+  ) => Promise<Output>
+) {
+  if (isStandardSchema(schemaOrFn) && typeof maybeFn === "function") {
+    return query(schemaOrFn, (output) => {
+      const event = getRequestEvent();
+      if (!event.locals.user) redirect(302, LOGINPAGE);
+      return maybeFn(output, { user: event.locals.user, event });
+    });
+  }
+
+  if (typeof schemaOrFn === "function" && !maybeFn) {
+    return query(() => {
+      const event = getRequestEvent();
+      if (!event.locals.user) redirect(302, LOGINPAGE);
+      return schemaOrFn({ user: event.locals.user, event });
+    });
+  }
+
+  throw new Error("Invalid arguments");
+}
+
+// Similar implementations for guardedForm and guardedCommand...
+```
+
+### ESLint Rule for Guarded Functions
+
+Enforce that all `.remote.ts` exports use guarded variants:
+
+```javascript
+// eslint/enforce-guarded-remote-functions.js
+export default {
+  meta: {
+    type: "problem",
+    docs: {
+      description: "Enforce that exports in .remote.ts files use guardedQuery(), guardedCommand(), or guardedForm()",
+      category: "Best Practices",
+      recommended: true
+    },
+    messages: {
+      unguardedExport: "Exports in .remote.ts files must use guardedQuery(), guardedCommand(), or guardedForm().",
+      mustBeGuarded: 'Export "{{name}}" must be the return value of guardedQuery(), guardedCommand(), or guardedForm().'
+    },
+    schema: []
+  },
+  create(context) {
+    const filename = context.getFilename();
+    if (!filename.endsWith(".remote.ts")) return {};
+
+    const guardedFunctions = new Set(["guardedQuery", "guardedCommand", "guardedForm"]);
+    const unguardedFunctions = new Set(["query", "command", "form"]);
+
+    function isGuardedCall(node) {
+      return node.type === "CallExpression" && node.callee.type === "Identifier" && guardedFunctions.has(node.callee.name);
+    }
+
+    function checkExportDeclaration(node) {
+      if (node.type === "ExportNamedDeclaration" && node.declaration?.type === "VariableDeclaration") {
+        for (const declarator of node.declaration.declarations) {
+          if (declarator.init?.type === "CallExpression" && unguardedFunctions.has(declarator.init.callee.name)) {
+            context.report({ node: declarator.init, messageId: "unguardedExport" });
+          } else if (!isGuardedCall(declarator.init)) {
+            context.report({ node: declarator, messageId: "mustBeGuarded", data: { name: declarator.id.name } });
+          }
+        }
+      }
+    }
+
+    return { ExportNamedDeclaration: checkExportDeclaration };
+  }
+};
+```
+
+```javascript
+// eslint.config.js
+import enforceGuardedExports from "./eslint/enforce-guarded-functions.js";
+
+export default [
+  {
+    files: ["**/*.remote.ts"],
+    plugins: { custom: { rules: { "enforce-guarded-functions": enforceGuardedExports } } },
+    rules: { "custom/enforce-guarded-functions": "error" }
+  }
+];
+```
+
+## Trade-offs and Considerations
+
+### When to Use Remote Functions
+
+**Remote functions work best when:**
+- You want type-safe client-server communication without maintaining separate endpoint definitions
+- You're building smaller, simpler data operations
+- You want built-in validation with Standard Schema
+
+**Use traditional endpoints (`+server.ts`) when:**
+- Complex authentication flows or third-party webhook handlers
+- You need fine-grained control over HTTP status codes and headers
+- Building public APIs consumed by external clients
+
+### Limitations
+
+- **Experimental status:** APIs may change; keep SvelteKit updated
+- **File location:** `.remote.ts` files can go anywhere except `src/lib/server`
+- **Prerender caching:** Data is cached at build time, potentially stale until redeployment
+- **Security past issues:** Previous versions had DoS vulnerabilities; stay current with releases
+
+### Coexistence with Traditional Endpoints
+
+Remote functions and traditional endpoints coexist without conflict. You can migrate incrementally, converting endpoints one at a time. Many projects keep complex authentication or webhook handlers as traditional endpoints while using remote functions for simpler data operations.
+
+## Comparison: Remote Forms vs Superforms
+
+| Feature | Remote Forms | Superforms |
+|---------|-------------|------------|
+| Progressive enhancement | ✅ Yes | ✅ Yes (json mode) |
+| Data transport | `FormData` only | JSON via `devalue` |
+| Type coercion | Manual (schema) | Automatic |
+| Validation attributes | Manual | Automatic from JSONSchema |
+| Bundle size | Built-in | Additional dependency |
+| Runtime schema info | No (StandardSchemaV1 is types-only) | Yes (JSONSchema adapters) |
 
 ## References
 
