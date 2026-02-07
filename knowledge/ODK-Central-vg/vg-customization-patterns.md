@@ -8,9 +8,13 @@ tags:
   - customization
   - app-user-auth
   - modularity
+  - session-management
+  - cross-tab-sync
+  - frontend-patterns
+  - testing-patterns
 status: approved
 created: 2025-12-25
-updated: 2025-12-25
+updated: 2026-02-07
 ---
 
 # VG Customization Patterns for ODK Central
@@ -382,14 +386,319 @@ service.get('/system/app-users/telemetry', endpoint(
 
 **Configuration**: `docker-compose.vg-dev.yml` overrides
 
+## VG Feature: Session Inactivity Auto-Logout (Client)
+
+### Overview
+
+VG implements automatic logout after 30 minutes of user inactivity in the frontend. Activity in any browser tab resets the timer for all tabs.
+
+### Architecture Pattern: Cross-Tab Synchronization
+
+**Challenge**: Browser tabs don't share JavaScript state. Each tab runs independently.
+
+**Solution**: Use localStorage + storage events for cross-tab communication.
+
+**Key Implementation Pattern**:
+
+```javascript
+// 1. Track activity timestamp in localStorage
+export const setLastActivityAt = (millis = Date.now()) => {
+  localStorage.setItem('vgSessionLastActivityAt', millis.toString());
+};
+
+// 2. Listen for storage events (fires when OTHER tabs write to localStorage)
+export const attachActivityStorageListener = (callback) => {
+  const handler = (event) => {
+    if (event.key === 'vgSessionLastActivityAt' && event.newValue != null) {
+      callback(); // Activity detected from another tab
+    }
+  };
+  window.addEventListener('storage', handler);
+  return () => window.removeEventListener('storage', handler);
+};
+
+// 3. In session management hook
+export const useSessions = () => {
+  const checkInactivity = logOutAfterInactivity(container);
+
+  // Attach activity listeners in THIS tab
+  const activityHandler = createInactivityActivityHandler();
+  const removeInactivityListeners = attachInactivityListeners(activityHandler);
+
+  // Listen for activity from OTHER tabs
+  const removeActivityStorageListener = attachActivityStorageListener(() => {
+    checkInactivity(); // Re-check immediately when other tab has activity
+  });
+
+  onBeforeUnmount(() => {
+    removeInactivityListeners();
+    removeActivityStorageListener();
+  });
+};
+```
+
+**Why This Works**:
+- `storage` event fires only in **other tabs**, not the tab that wrote the value
+- When Tab A has activity → writes to localStorage → Tab B receives storage event → Tab B re-checks inactivity timer
+- All tabs share the same `lastActivityAt` timestamp
+- Prevents inactive tabs from logging out active tabs
+
+### Inactivity Tracking Pattern
+
+**Requirements**:
+- Track user activity events (click, keydown, mousemove, etc.)
+- Throttle localStorage updates to avoid excessive I/O
+- Show warning before auto-logout
+- Reset warning when activity resumes
+
+**Implementation**:
+
+```javascript
+// 1. Throttled activity handler (max once per 15 seconds)
+export const createInactivityActivityHandler = (throttleMillis = 15000) => {
+  let lastSavedAt = 0;
+  return () => {
+    const now = Date.now();
+    if (now - lastSavedAt < throttleMillis) return;
+    setLastActivityAt(now);
+    lastSavedAt = now;
+  };
+};
+
+// 2. Attach listeners for activity events
+const activityEvents = ['click', 'keydown', 'mousedown', 'mousemove', 'scroll', 'touchstart'];
+
+export const attachInactivityListeners = (handler) => {
+  for (const event of activityEvents)
+    window.addEventListener(event, handler, { passive: true });
+  return () => {
+    for (const event of activityEvents)
+      window.removeEventListener(event, handler);
+  };
+};
+
+// 3. Check inactivity with warning logic
+const logOutAfterInactivity = (container) => {
+  const { i18n, requestData, alert, router } = container;
+  let lastActivityWhenWarned = null;
+
+  return () => {
+    if (router.currentRoute.value.meta.skipAutoLogout) return;
+    if (!requestData.session.dataExists) return;
+
+    const now = Date.now();
+    const lastActivityAt = getLastActivityAt();
+    if (lastActivityAt == null) return;
+
+    const millisSinceActivity = now - lastActivityAt;
+    const millisUntilLogout = inactivityLogoutMillis - millisSinceActivity;
+
+    // Reset warning if there was activity since last warning
+    if (lastActivityWhenWarned != null && lastActivityAt > lastActivityWhenWarned) {
+      lastActivityWhenWarned = null;
+    }
+
+    // Log out if timeout reached
+    if (millisUntilLogout <= 0) {
+      logOut(container, true)
+        .then(() => { alert.info(i18n.t('util.session.alert.expired')); })
+        .catch(noop);
+    }
+    // Warn 3 minutes before timeout
+    else if (millisUntilLogout <= 180000 && lastActivityWhenWarned == null) {
+      alert.info(i18n.t('util.session.alert.expiresSoon'));
+      lastActivityWhenWarned = lastActivityAt;
+    }
+  };
+};
+```
+
+**Key Patterns**:
+- **Throttling**: Prevents localStorage writes on every mousemove (would cause performance issues)
+- **Warning state**: Tracks when warning was shown using closure variable
+- **Warning reset**: Compares `lastActivityWhenWarned` to `lastActivityAt` to detect new activity
+- **Passive listeners**: `{ passive: true }` prevents scroll jank
+
+### Testing Pattern: Fake Timers + Cross-Tab Scenarios
+
+**Challenge**: Testing time-based behavior and cross-tab communication.
+
+**Solution**: Use Sinon fake timers + StorageEvent simulation.
+
+**Pattern**:
+
+```javascript
+describe('logout after inactivity', () => {
+  let clock;
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers(); // Mock Date.now() and setTimeout
+  });
+
+  afterEach(() => {
+    clock.restore(); // CRITICAL: Restore real timers to prevent test pollution
+  });
+
+  it('logs out after inactivity timeout is reached', () => {
+    // ... setup ...
+    return mockHttp(container)
+      .request(() => logIn(container, true))
+      .respondWithData(() => testData.extendedUsers.first())
+      .testNoRequest(() => {
+        clock.tick(inactivityLogoutMillis - 15000); // Advance to 29:45
+      })
+      .request(() => {
+        clock.tick(15000); // Advance to 30:00 → triggers logout
+      })
+      .respondWithSuccess()
+      .afterResponse(() => {
+        session.dataExists.should.be.false;
+      });
+  });
+
+  it('prevents logout when activity detected from other tabs', () => {
+    // ... setup ...
+    return mockHttp(container)
+      .request(() => logIn(container, true))
+      .respondWithData(() => testData.extendedUsers.first())
+      .testNoRequest(() => {
+        clock.tick(inactivityLogoutMillis - 30000); // Near timeout
+
+        // Simulate activity in another tab
+        const now = Date.now();
+        localStorage.setItem(inactivityStorageKey, now.toString());
+        window.dispatchEvent(new StorageEvent('storage', {
+          key: inactivityStorageKey,
+          newValue: now.toString(),
+          oldValue: (now - (inactivityLogoutMillis - 30000)).toString()
+        }));
+      })
+      .testNoRequest(() => {
+        clock.tick(60000); // Advance past original timeout
+      })
+      .afterResponse(() => {
+        session.dataExists.should.be.true; // Still logged in
+      });
+  });
+});
+```
+
+**Critical Testing Patterns**:
+1. **Cleanup hooks**: Always `clock.restore()` in `afterEach()` to prevent test pollution
+2. **StorageEvent simulation**: Use `new StorageEvent('storage', { key, newValue, oldValue })` to simulate cross-tab writes
+3. **Time advancement**: Use `clock.tick()` to advance fake timers precisely
+4. **No-request assertions**: Use `.testNoRequest()` to verify logout **doesn't** happen when activity detected
+
+### localStorage Key Naming (VG)
+
+**Pattern**: Prefix with `vg` to clearly identify VG-specific browser storage
+
+**Examples**:
+- `vgSessionLastActivityAt` (inactivity tracking)
+- Standard: `sessionExpires` (existing, non-VG)
+
+**Why Prefix**:
+- Avoids conflicts with potential upstream features
+- Easy to identify during debugging
+- Clear separation for removal/migration
+
+### File Naming (Client VG)
+
+**Pattern**: Prefix new VG-specific files with `vg-`
+
+**Examples**:
+- `src/util/vg-session-inactivity.js` (VG feature)
+- `docs/vg/vg-client/vg_client_changes.md` (VG documentation)
+
+**Core File Edits**:
+- Minimal changes to `src/util/session.js` (documented in `client/docs/vg/vg-client/vg_core_client_edits.md`)
+
+### Documentation Requirements (Client VG)
+
+**Required Files**:
+1. **docs/vg/vg-client/README.md**: Overview and quick reference
+2. **docs/vg/vg-client/vg_client_changes.md**: Feature list with descriptions
+3. **docs/vg/vg-client/vg_core_client_edits.md**: Line-by-line tracking of upstream file modifications
+
+**Purpose**: Enable easy rebasing and conflict resolution when merging upstream changes
+
+**Format** (vg_core_client_edits.md):
+```markdown
+### `src/util/session.js`
+
+**VG Feature:** Session Inactivity Auto-Logout
+
+**Changes Made:**
+
+#### 1. Imports (lines ~67-73)
+Added VG session inactivity module imports:
+```javascript
+import { ... } from './vg-session-inactivity';
+```
+
+**Merge Strategy:** If upstream modifies imports section, add VG import after upstream changes.
+```
+
+### Integration Pattern: Minimal Core File Changes
+
+**Goal**: Minimize merge conflicts during upstream rebases
+
+**Pattern**:
+1. Create new VG-specific file (`vg-*.js`)
+2. Add **single import** to core file
+3. Add **minimal integration code** (call VG functions)
+4. Document all changes in `vg_core_client_edits.md`
+
+**Example**:
+```javascript
+// Core file: src/util/session.js
+import { setLastActivityAt } from './vg-session-inactivity'; // 1 line added
+
+export const logIn = (container, newSession) => {
+  // ... existing code ...
+  setLastActivityAt(); // 1 line added
+  // ... existing code ...
+};
+```
+
+**Benefit**: Only 2 lines modified in core file → minimal rebase conflicts
+
+### Reusable Patterns Summary
+
+#### Cross-Tab State Sync
+1. Write shared state to localStorage
+2. Listen for `storage` events in all tabs
+3. Re-check state when event fires
+4. Remember: `storage` event fires only in **other tabs**
+
+#### Activity Tracking
+1. Monitor user interaction events
+2. Throttle updates to reduce I/O
+3. Use passive listeners for performance
+4. Store timestamp in localStorage for cross-tab sharing
+
+#### Warning Before Auto-Action
+1. Calculate time until action
+2. Show warning at threshold (e.g., 3 min before)
+3. Track warning state in closure
+4. Reset warning when condition changes
+
+#### Testing Time-Based Features
+1. Use `sinon.useFakeTimers()` in `beforeEach()`
+2. **Always** `clock.restore()` in `afterEach()`
+3. Advance time with `clock.tick(milliseconds)`
+4. Simulate cross-tab with `StorageEvent`
+
 ## Related
 
 - [[server-architecture-patterns]] - Standard ODK Central patterns
 - [[git-submodule-workflows]] - Managing client/server submodules
+- [[sveltekit-state-management]] - Modern frontend state patterns
 
 ## References
 
 - CLAUDE.md - VG fork workflow and branch policy
 - server/docs/vg_core_server_edits.md - Authoritative log of upstream edits
+- client/docs/vg/vg-client/vg_core_client_edits.md - Client upstream edits log
 - server/docs/vg_api.md - VG API reference
 - server/docs/vg_implementation.md - Implementation details
