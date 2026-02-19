@@ -14,7 +14,7 @@ docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
   typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
 ```
 
-**No dependency installation required!** The `uv run --active --with` flags automatically fetch dependencies.
+`uv run --active --with ...` installs dependencies on demand. In offline/DNS-restricted environments, this can fail.
 
 **Sandbox/CI note**: If `uv` hits permission errors, use a local cache path:
 
@@ -28,12 +28,16 @@ $env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
 New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
 ```
 
+If sandbox still blocks `~/.cache/uv`, rerun with elevated permissions.
+
 ## Index KB
 
 ```bash
 # Build search index (run after adding/updating knowledge files)
 uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
+
+Note: `index_typesense.py` does not support `--kb-root`; it auto-detects KB root from script location.
 
 ## Search
 
@@ -79,6 +83,13 @@ curl http://localhost:8108/health
 # View Docker logs for errors
 docker logs typesense --tail 50
 ```
+
+Common failures:
+
+- `Search error: [Errno 61] Connection refused`: Typesense container is not running.
+- `ModuleNotFoundError: No module named 'tqdm'`: add `--with tqdm` to index command.
+- `ModuleNotFoundError: No module named 'typesense'`: add `--with typesense` to search command.
+- `Failed to fetch https://pypi.org/simple/...`: network/DNS unavailable for dependency download.
 
 ## Standalone Usage (If Not Using as Submodule)
 

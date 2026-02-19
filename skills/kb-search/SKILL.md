@@ -38,6 +38,9 @@ $env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
 New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
 ```
 
+If `uv` still fails with sandbox errors against `~/.cache/uv`, rerun with elevated permissions.  
+If `uv` fails with DNS/PyPI errors, dependencies cannot be fetched in offline mode; use already-installed environments or restore network access.
+
 ## First-Time Setup
 
 If the user doesn't have agentic_kb set up yet, guide them through the initial setup:
@@ -183,7 +186,13 @@ scripts/update_kb.ps1 [-SubmodulePath <path>]
 If the update script is missing, pull updates directly:
 
 ```bash
-git -C agentic_kb pull
+git -C agentic_kb pull --ff-only
+```
+
+If script output includes permission errors writing `.git/modules/.../FETCH_HEAD`, run direct pull with elevated permissions:
+
+```bash
+git -C agentic_kb pull --ff-only
 ```
 
 If user declines update, continue with local KB content and state that KB was not refreshed from git.
@@ -473,6 +482,26 @@ cd ..
 3. Check if content exists with `rg`
 4. Verify filters aren't too restrictive
 5. Try removing status/type filters
+
+### Typesense Index Command Mismatch
+
+`index_typesense.py` does not accept `--kb-root`. It auto-detects KB root from script location.
+
+Use:
+
+```bash
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+```
+
+### Missing Python Modules
+
+If indexing fails with `ModuleNotFoundError: No module named 'tqdm'`, include `--with tqdm`.  
+If searching fails with `ModuleNotFoundError: No module named 'typesense'`, include `--with typesense`.
+
+```bash
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "query"
+```
 
 ## Resources
 

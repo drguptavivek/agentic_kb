@@ -56,6 +56,30 @@ New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
 uv run --active --with typesense python scripts/search_typesense.py "query"
 ```
 
+If `uv` still fails due to access under `~/.cache/uv`, rerun with elevated permissions.  
+If `uv` fails with PyPI DNS/connectivity errors, dependency resolution is blocked by network limits.
+
+## Command Differences That Matter
+
+1. `update_kb.sh` is a wrapper and may report success after fallback behavior.
+2. `git -C agentic_kb pull --ff-only` is the direct verification/update command.
+3. `index_typesense.py` auto-detects KB root and does not accept `--kb-root`.
+4. `index_typesense.py` needs `tqdm`; include `--with tqdm`.
+5. `search_typesense.py` needs `typesense`; include `--with typesense`.
+
+Examples:
+
+```bash
+# Direct KB update
+git -C agentic_kb pull --ff-only
+
+# Typesense index
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+
+# Typesense search
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "query"
+```
+
 ### Bash
 
 ```bash
@@ -70,6 +94,8 @@ uv run --active --with typesense python scripts/search_typesense.py "query"
 - [ ] Search KB only on explicit user request
 - [ ] Read full files before answering from KB
 - [ ] Use `UV_CACHE_DIR` + `uv run --active` in restricted environments
+- [ ] Prefer direct `git -C agentic_kb pull --ff-only` when update script shows permission errors
+- [ ] Use correct Typesense index command (no `--kb-root`, include `--with tqdm`)
 - [ ] Propose KB capture when a new reusable problem-solving technique is learned
 
 ## References
