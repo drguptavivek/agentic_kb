@@ -8,6 +8,14 @@ from typing import List
 import typesense
 
 
+def configure_console_encoding() -> None:
+    """Prefer UTF-8 output on terminals that support stream reconfiguration."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+
 @contextmanager
 def suppress_typesense_warnings():
     """Suppress Typesense v30+ deprecation warnings printed to stderr."""
@@ -140,6 +148,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     """Main entry point."""
+    configure_console_encoding()
     args = parse_args()
 
     with suppress_typesense_warnings():

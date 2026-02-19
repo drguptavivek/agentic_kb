@@ -11,6 +11,14 @@ import typesense
 from tqdm import tqdm
 
 
+def configure_console_encoding() -> None:
+    """Prefer UTF-8 output on terminals that support stream reconfiguration."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+
 @contextmanager
 def suppress_typesense_warnings():
     """Suppress Typesense v30+ deprecation warnings printed to stderr."""
@@ -47,8 +55,13 @@ def strip_frontmatter(text: str) -> tuple[str, dict]:
         if line.startswith("tags:"):
             tags_part = line.replace("tags:", "").strip()
             if tags_part.startswith("[") and tags_part.endswith("]"):
-                # JSON-style array: tags: [pandoc, docx]
-                metadata["tags"] = json.loads(tags_part)
+                # Bracket array in frontmatter, e.g. tags: [pandoc, docx]
+                # Try JSON first (["pandoc","docx"]), then YAML-like ([pandoc, docx]).
+                try:
+                    metadata["tags"] = json.loads(tags_part)
+                except json.JSONDecodeError:
+                    inner = tags_part[1:-1].strip()
+                    metadata["tags"] = [t.strip().strip("'\"") for t in inner.split(",") if t.strip()]
                 i += 1
             elif tags_part:
                 # Inline comma-separated: tags: pandoc, docx
@@ -238,6 +251,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     """Main entry point."""
+    configure_console_encoding()
     args = parse_args()
 
     with suppress_typesense_warnings():
@@ -245,7 +259,7 @@ def main() -> None:
         create_schema(client, args.collection)
         index_documents(client, args.collection, args.batch_size)
 
-    print(f"\n✓ Index complete. Query at http://{args.host}:{args.port}")
+    print(f"\nIndex complete. Query at http://{args.host}:{args.port}")
 
 
 if __name__ == "__main__":
