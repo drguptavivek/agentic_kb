@@ -92,7 +92,7 @@ You can also suppress all stderr output globally:
 
 ```bash
 # Suppress all stderr (not recommended - hides real errors)
-uv run python scripts/search_typesense.py "query" 2>/dev/null
+uv run --active python scripts/search_typesense.py "query" 2>/dev/null
 
 # Better: Use the context manager approach in code
 ```
@@ -111,12 +111,12 @@ After applying the fix:
 
 ```bash
 # Should show NO deprecation warnings (direct repo)
-uv run --with typesense python scripts/search_typesense.py "test query"
-uv run --with typesense --with tqdm python scripts/index_typesense.py
+uv run --active --with typesense python scripts/search_typesense.py "test query"
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py
 
 # Or from parent project (submodule)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "test query"
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "test query"
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ## Related

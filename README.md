@@ -14,6 +14,20 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 - **Typesense** (recommended): Fast full-text search with faceted filtering → [QUICK-TYPESENSE-WORKFLOW.md](QUICK-TYPESENSE-WORKFLOW.md)
 - **FAISS**: Semantic vector search for conceptual queries → [QUICK-FAISS-WORKFLOW.md](QUICK-FAISS-WORKFLOW.md)
 
+**Sandbox/CI Note**: In restricted environments, keep UV cache inside the repo:
+
+```bash
+# Bash
+export UV_CACHE_DIR="$(pwd)/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+```
+
+```powershell
+# PowerShell
+$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
+New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
+```
+
 **Need to add or update knowledge?** See [INSTRUCTIONS.md](INSTRUCTIONS.md)
 
 **Integrate instructions for your AGENT** See [AGENTS.md](AGENTS.md)
@@ -77,12 +91,12 @@ rg "ISO 27001" agentic_kb/knowledge/
 ```bash
 # Setup and index (one-time, 5-10 minutes)
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 cd ..
 
 # Search
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
 ```
 
@@ -127,7 +141,7 @@ For semantic/conceptual queries when keyword search isn't sufficient.
 
 ```bash
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 cd ..
 ```
 
@@ -135,7 +149,7 @@ cd ..
 
 ```bash
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
 ```
 
@@ -152,7 +166,7 @@ Notes:
 Generate OS- and hardware-specific setup suggestions (no installs performed):
 
 ```bash
-uv run python scripts/recommend_setup.py
+uv run --active python scripts/recommend_setup.py
 ```
 
 ## Typesense Full-Text Search (HIGHLY RECOMEMNDED)
@@ -178,20 +192,20 @@ docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
 
 ```bash
 # Direct repo usage
-uv run --with typesense --with tqdm python scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py
 
 # Submodule usage
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 3. Search:
 
 ```bash
 # Direct repo usage
-uv run --with typesense python scripts/search_typesense.py "page numbering pandoc"
+uv run --active --with typesense python scripts/search_typesense.py "page numbering pandoc"
 
 # Submodule usage
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
 ```
 
 **When to Use**:

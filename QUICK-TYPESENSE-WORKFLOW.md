@@ -14,44 +14,56 @@ docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
   typesense/typesense:29.0 --data-dir /data --api-key=$TYPESENSE_API_KEY --enable-cors
 ```
 
-**No dependency installation required!** The `uv run --with` flags automatically fetch dependencies.
+**No dependency installation required!** The `uv run --active --with` flags automatically fetch dependencies.
+
+**Sandbox/CI note**: If `uv` hits permission errors, use a local cache path:
+
+```bash
+export UV_CACHE_DIR="$(pwd)/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+```
+
+```powershell
+$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
+New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
+```
 
 ## Index KB
 
 ```bash
 # Build search index (run after adding/updating knowledge files)
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ## Search
 
 ```bash
 # Basic search
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "your query"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "your query"
 
 # Limit results
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering" --k 10
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering" --k 10
 
 # Filter by tag
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
 
 # Filter by multiple tags (OR)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "tags:=[pandoc,docx]"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "tags:=[pandoc,docx]"
 
 # Filter by domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
 
 # Filter by type (howto, reference, checklist, policy, note)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
 
 # Filter by status (draft, approved, deprecated)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
 
 # Combine filters (AND)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search && type:howto"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search && type:howto"
 
 # Search specific fields
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
 ```
 
 
@@ -59,7 +71,7 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" -
 
 ```bash
 # Rebuild index if search returns no results
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 
 # Check Typesense server status
 curl http://localhost:8108/health
@@ -74,10 +86,10 @@ If running directly in the KB repo (not as submodule), omit the `agentic_kb/` pr
 
 ```bash
 # Index
-uv run --with typesense --with tqdm python scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py
 
 # Search
-uv run --with typesense python scripts/search_typesense.py "your query"
+uv run --active --with typesense python scripts/search_typesense.py "your query"
 ```
 
 ## Performance

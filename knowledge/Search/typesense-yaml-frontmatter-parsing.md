@@ -23,11 +23,11 @@ When indexing documents into Typesense, tags from YAML frontmatter weren't being
 
 ```bash
 # Search returns results but tags are empty
-uv run python scripts/search_typesense.py "pandoc"
+uv run --active python scripts/search_typesense.py "pandoc"
 # Output shows: Tags: (empty)
 
 # Filter by tags returns no results
-uv run python scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
+uv run --active python scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
 # Output: No results found.
 ```
 
@@ -125,17 +125,17 @@ After applying the fix, rebuild the index:
 
 ```bash
 # Rebuild index (direct repo)
-uv run --with typesense --with tqdm python scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py
 
 # Or from parent project (submodule)
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 
 # Verify tags are extracted
-uv run --with typesense python scripts/search_typesense.py "pandoc" --k 3
+uv run --active --with typesense python scripts/search_typesense.py "pandoc" --k 3
 # Should show: Tags: pandoc, docx, word, page-numbering, ...
 
 # Test tag filtering
-uv run --with typesense python scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
+uv run --active --with typesense python scripts/search_typesense.py "pandoc" --filter "tags:pandoc"
 # Should return filtered results
 ```
 

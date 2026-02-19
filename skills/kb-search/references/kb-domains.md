@@ -56,11 +56,11 @@ Use the `--filter` flag with Typesense to search within specific domains:
 
 ```bash
 # Search only in Document Automation domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
   --filter "domain:Document Automation"
 
 # Search only in Search domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "retrieval" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "retrieval" \
   --filter "domain:Search"
 ```
 
@@ -77,7 +77,7 @@ KB documents are categorized by type in frontmatter:
 Filter by type:
 
 ```bash
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" \
   --filter "type:howto"
 ```
 
@@ -92,6 +92,6 @@ Documents have status tags:
 Filter by status:
 
 ```bash
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
   --filter "status:approved"
 ```

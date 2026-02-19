@@ -76,26 +76,26 @@ Build the Typesense index (no dependency installation required):
 
 ```bash
 # Direct repo usage
-uv run --with typesense --with tqdm python scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py
 
 # Submodule usage (run from parent project root)
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ### Index Options
 
 ```bash
 # Custom host/port (direct repo)
-uv run --with typesense --with tqdm python scripts/index_typesense.py --host localhost --port 8108
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py --host localhost --port 8108
 
 # Custom API key (submodule)
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py --api-key your-secret-key
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py --api-key your-secret-key
 
 # Custom collection name
-uv run --with typesense --with tqdm python scripts/index_typesense.py --collection my_kb
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py --collection my_kb
 
 # Custom batch size for large KBs
-uv run --with typesense --with tqdm python scripts/index_typesense.py --batch-size 200
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py --batch-size 200
 ```
 
 ## Searching
@@ -104,29 +104,29 @@ Search the indexed KB:
 
 ```bash
 # Direct repo usage
-uv run --with typesense python scripts/search_typesense.py "your query"
+uv run --active --with typesense python scripts/search_typesense.py "your query"
 
 # Submodule usage (run from parent project root)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "your query"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "your query"
 ```
 
 ### Search Examples
 
 ```bash
 # Basic search (submodule)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
 
 # Limit results
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc" --k 10
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc" --k 10
 
 # Filter by tags
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
 
 # Search specific fields
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --query-by "heading,path"
 
 # Custom collection (direct repo)
-uv run --with typesense python scripts/search_typesense.py "query" --collection my_kb
+uv run --active --with typesense python scripts/search_typesense.py "query" --collection my_kb
 ```
 
 ## How It Works
@@ -195,10 +195,10 @@ Rebuild the index:
 
 ```bash
 # Direct repo
-uv run --with typesense --with tqdm python scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python scripts/index_typesense.py
 
 # Submodule
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ### No Results

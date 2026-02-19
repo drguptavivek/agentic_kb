@@ -101,7 +101,7 @@ if [ "$READ_ONLY" = true ]; then
 fi
 
 if [ -z "$FORK_URL" ]; then
-    echo "❌ Error: Please provide --fork-url <URL> or use --read-only"
+    echo "❌ Error: Please provide --fork-url <URL>, --default, or use --read-only"
     echo "Create a fork first:"
     echo "  Web: https://github.com/drguptavivek/agentic_kb"
     echo "  CLI: gh repo fork drguptavivek/agentic_kb --clone=false"

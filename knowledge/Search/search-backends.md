@@ -149,11 +149,11 @@ For comprehensive search, combine multiple backends:
 ```bash
 # 1. Semantic search for concepts (direct repo)
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "document formatting" --min-score 0.7
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "document formatting" --min-score 0.7
 cd ..
 
 # 2. Keyword search for specifics (submodule)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc docx"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc docx"
 
 # 3. Exact pattern matching
 rg "pandoc.*--reference-doc" agentic_kb/knowledge/
@@ -208,12 +208,12 @@ def hybrid_search(query: str):
 ```bash
 # High quality embeddings (slower) - direct repo
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-mpnet-base-v2
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-mpnet-base-v2
 cd ..
 
 # Fast embeddings (faster) - direct repo
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-MiniLM-L6-v2
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-MiniLM-L6-v2
 cd ..
 ```
 
@@ -250,11 +250,11 @@ Use Typesense as primary (faster), FAISS for semantic queries, ripgrep for verif
 ```bash
 # Agent search pattern (submodule)
 # 1. Try Typesense first (10-50ms)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering" --k 5
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering" --k 5
 
 # 2. Use FAISS for conceptual queries (100-500ms)
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering" --min-score 0.8
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering" --min-score 0.8
 cd ..
 
 # 3. Verify with ripgrep

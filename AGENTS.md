@@ -8,6 +8,8 @@ tags:
 
 This is the single source of truth for agent behavior when using this KB.
 
+Windows note: when running in PowerShell, prefer `scripts/*.ps1` over `scripts/*.sh`.
+
 **For Parent Projects**: If this KB is used as a submodule, the parent project's `CLAUDE.md` should reference these instructions. See [GIT_WORKFLOWS.md](GIT_WORKFLOWS.md#integrating-agent-instructions-into-parent-projects) for integration template.
 
 ## Scope and Sources
@@ -26,9 +28,46 @@ For initial KB setup with a submodule:
 
 For detailed setup options, see `GIT_WORKFLOWS.md`.
 
+## Skill Packaging
+
+Build `skills/kb-search.skill` so it expands into a `kb-search/` subdirectory (not root files).
+
+```bash
+cd skills
+rm -f kb-search.skill
+zip -r kb-search.skill kb-search
+cd ..
+```
+
+```powershell
+Push-Location skills
+if (Test-Path "kb-search.skill") { attrib -R "kb-search.skill"; Remove-Item "kb-search.skill" -Force }
+Compress-Archive -Path "kb-search" -DestinationPath "kb-search.skill" -Force
+Pop-Location
+```
+
+## Sandbox/CI Resilience
+
+When running in restricted environments, set a repo-local UV cache before `uv run --active` commands:
+
+```bash
+export UV_CACHE_DIR="$(pwd)/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+```
+
+```powershell
+$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
+New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
+```
+
 ## Session Initialization
 
-**CRITICAL**: At the start of each session, agents MUST update the KB to ensure access to the latest knowledge:
+**CRITICAL**: At the start of each session, agents MUST ask the user whether KB update is needed for this session before running any git update command.
+
+Prompt pattern:
+- `Do you want me to update the KB from git for this session?`
+
+If user says **yes**, run:
 
 ```bash
 # Auto-detect KB path (works for direct repo or submodule):
@@ -49,22 +88,26 @@ cd agentic_kb && git pull && cd ..
 git pull
 ```
 
-This ensures:
+If user says **no**, skip git update and continue with local KB content.
+
+When updated, this ensures:
 - The KB is current with upstream changes
 - The parent project tracks the latest KB version
 - All agents work with synchronized knowledge
 
 ## Required Workflow
 
-1. Search the KB before answering using one of these methods (in order of preference):
+1. Search the KB only when the user explicitly asks to search/use the KB.
+2. If user did not ask for KB search, answer normally without KB lookup.
+3. If user asks for KB search, use one of these methods (in order of preference):
    - **Smart search** (tries Typesense → FAISS automatically)
    - **Typesense** for fast full-text search with filters
    - **FAISS** for semantic/conceptual queries
    - **ripgrep** (`rg`) for exact pattern matching
-2. Open the most relevant file(s) using the Read tool.
-3. Answer using KB content, preferring exact steps or checklists.
-4. Cite sources using: `<file path> -> <heading>`.
-5. If missing, say: "Not found in KB" and suggest where to add it.
+4. Open the most relevant file(s) using the Read tool.
+5. Answer using KB content, preferring exact steps or checklists.
+6. Cite sources using: `<file path> -> <heading>`.
+7. If missing, say: "Not found in KB" and suggest where to add it.
 
 **IMPORTANT**: Never answer from search snippets alone. Always read the full files first. See `knowledge/Search/agent-retrieval-workflow.md` for detailed workflow.
 
@@ -118,26 +161,26 @@ docker run -d --name typesense -p 8108:8108 -v typesense-agentic-kb-data:/data \
 Build the index (run from parent project root):
 
 ```bash
-uv run --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
 ```
 
 ### Search
 
 ```bash
 # Basic search
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
 
 # Filter by domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
 
 # Filter by type (howto, reference, checklist, policy, note)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
 
 # Filter by status (draft, approved, deprecated)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
 
 # Combine filters
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" \
   --filter "domain:Search && type:howto && status:approved"
 ```
 
@@ -153,7 +196,7 @@ Use for semantic/conceptual queries when Typesense doesn't find relevant results
 
 ```bash
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 cd ..
 ```
 
@@ -161,8 +204,8 @@ cd ..
 
 ```bash
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
 ```
 
@@ -178,6 +221,7 @@ Notes:
 
 Agents must document new, reusable knowledge learned during tasks. 
 If a KB update is needed based on new findings, ask for user confirmation before making edits.
+If a new problem-solving technique is learned, ask the user whether to add it to the KB, then capture it if confirmed.
 Follow `knowledge/Document Automation/learning-capture-steps.md`.
 Follow `KNOWLEDGE_CONVENTIONS.md`.
 

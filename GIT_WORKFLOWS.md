@@ -14,6 +14,11 @@ knowledge is organized.
 
 Use this when you are editing the KB in its own repo.
 
+Before running update commands in an agent session, ask:
+- `Do you want me to update the KB from git for this session?`
+
+If user says yes, run:
+
 ```bash
 git pull origin main
 git add knowledge/ README.md
@@ -21,11 +26,18 @@ git commit -m "Update: KB changes"
 git push
 ```
 
+If user says no, skip git update and continue with local KB content.
+
 ## Workflow: KB as Submodule in Projects
 
 Use this when `agentic_kb` is mounted as a submodule inside another project.
 
 ### Update Project to Latest KB
+
+Before running update commands in an agent session, ask:
+- `Do you want me to update the KB from git for this session?`
+
+If user says yes, run:
 
 ```bash
 # In the project repo
@@ -34,6 +46,8 @@ git add agentic_kb
 git commit -m "Update kb submodule"
 git push
 ```
+
+If user says no, skip git update and continue with local KB content.
 
 ### Make KB Changes From Inside Project
 
@@ -93,11 +107,11 @@ rg "your query" agentic_kb/knowledge/
 rg "#tag" agentic_kb/knowledge/
 
 # Typesense search (recommended - fast)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "your query"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "your query"
 
 # Vector search (if enabled - semantic)
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query" --min-score 0.8
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query" --min-score 0.8
 cd ..
 ```
 

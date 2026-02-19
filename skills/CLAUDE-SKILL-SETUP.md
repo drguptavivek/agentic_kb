@@ -18,6 +18,20 @@ The `kb-search` skill enables Claude Code to:
 - **Python 3.8+** with `uv` - For running search scripts
 - **Docker** (optional) - For Typesense server
 
+## Sandbox/CI Note
+
+If `uv` reports permission errors, set a repo-local cache before running commands:
+
+```bash
+export UV_CACHE_DIR="$(pwd)/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+```
+
+```powershell
+$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
+New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
+```
+
 ## Installation
 ## Installation
 
@@ -113,7 +127,7 @@ docker run -d --name typesense -p 8108:8108 \
 
 # Build the index (run from KB repo root)
 cd /Users/vivekgupta/kb
-uv run --with typesense --with tqdm \
+uv run --active --with typesense --with tqdm \
   python scripts/index_typesense.py
 ```
 
@@ -126,7 +140,7 @@ For semantic/conceptual searches:
 ```bash
 # Build FAISS index (from KB repo root)
 cd /Users/vivekgupta/kb
-uv run --with faiss-cpu --with numpy \
+uv run --active --with faiss-cpu --with numpy \
   --with sentence-transformers --with tqdm \
   python scripts/index_kb.py
 ```
@@ -142,10 +156,10 @@ The skill uses these scripts under the hood, but you can also run them manually:
 ./scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
 
 # Typesense search
-uv run --with typesense python scripts/search_typesense.py "query" --filter "domain:Search"
+uv run --active --with typesense python scripts/search_typesense.py "query" --filter "domain:Search"
 
 # FAISS search
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers \
   python scripts/search.py "query" --min-score 0.8
 
 # Exact pattern matching
@@ -210,7 +224,7 @@ curl http://localhost:8108/health
 ls -la .kb_index/
 
 # Rebuild index
-uv run --with faiss-cpu --with numpy \
+uv run --active --with faiss-cpu --with numpy \
   --with sentence-transformers --with tqdm \
   python scripts/index_kb.py
 
@@ -225,8 +239,8 @@ ls -la .kb_index/
 uv --version
 
 # Check Python dependencies
-uv run --with typesense python -c "import typesense; print(typesense.__version__)"
-uv run --with faiss-cpu python -c "import faiss; print(faiss.__version__)"
+uv run --active --with typesense python -c "import typesense; print(typesense.__version__)"
+uv run --active --with faiss-cpu python -c "import faiss; print(faiss.__version__)"
 
 # Make scripts executable
 chmod +x scripts/*.sh

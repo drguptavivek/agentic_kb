@@ -85,9 +85,18 @@ fi
 echo "🔍 Searching KB for: $QUERY"
 echo ""
 
+# Keep uv writable paths inside the repo for sandboxed environments.
+if [ "$KB_PATH" = "." ]; then
+    KB_ABS_PATH="$(pwd)"
+else
+    KB_ABS_PATH="$(cd "$KB_PATH" && pwd)"
+fi
+export UV_CACHE_DIR="$KB_ABS_PATH/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+
 # Try Typesense first
 echo "📊 Trying Typesense (fast full-text search)..."
-TYPESENSE_CMD="uv run --with typesense python \"$KB_PATH/scripts/search_typesense.py\" \"$QUERY\""
+TYPESENSE_CMD="uv run --active --with typesense python \"$KB_PATH/scripts/search_typesense.py\" \"$QUERY\""
 if [ -n "$FILTER" ]; then
     TYPESENSE_CMD="$TYPESENSE_CMD --filter \"$FILTER\""
 fi
@@ -118,5 +127,5 @@ echo ""
 
 (
     cd "$KB_PATH"
-    uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "$QUERY" --min-score "$MIN_SCORE"
+    uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "$QUERY" --min-score "$MIN_SCORE"
 )

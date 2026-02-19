@@ -9,10 +9,34 @@ description: Search and retrieve knowledge from agentic_kb knowledge base. Use w
 
 This skill enables searching and retrieving knowledge from the agentic_kb knowledge base, a structured repository of domain-specific knowledge organized into domains (Document Automation, Search, Security, Android, ODK Central).
 
+Trigger policy:
+- Do not auto-search the KB for every question.
+- Use this skill only when the user explicitly asks to search/use the KB, or explicitly asks to update/capture KB knowledge.
+
 The skill supports three search methods, in this order:
 1. **Typesense** - Fast full-text search with typo tolerance (10-50ms, default when available)
 2. **FAISS** - Semantic vector search for conceptual queries (100-500ms, fallback if Typesense is not running)
 3. **ripgrep** - Exact pattern matching for strings and code (< 10ms, fallback for simple exact queries)
+
+## Shell-Specific Commands
+
+- Linux/macOS shells: use `*.sh` scripts.
+- Windows PowerShell: use `*.ps1` scripts.
+- If the shell is unknown, detect the OS first, then select script extension accordingly.
+
+## Sandbox/CI Resilience
+
+Before running `uv run --active ...` commands in restricted environments, set a repo-local cache:
+
+```bash
+export UV_CACHE_DIR="$(pwd)/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+```
+
+```powershell
+$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
+New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
+```
 
 ## First-Time Setup
 
@@ -36,10 +60,24 @@ git commit -m "Add: agentic_kb submodule (existing fork)"
 git push
 ```
 
+```powershell
+agentic_kb/scripts/setup_kb.ps1 -ForkUrl <USER_KB_REPO_URL>
+git add .gitmodules agentic_kb
+git commit -m "Add: agentic_kb submodule (existing fork)"
+git push
+```
+
 If they want the default KB, add the upstream as the submodule:
 
 ```bash
 agentic_kb/scripts/setup_kb.sh --default
+git add .gitmodules agentic_kb
+git commit -m "Add: agentic_kb submodule (default KB)"
+git push
+```
+
+```powershell
+agentic_kb/scripts/setup_kb.ps1 -Default
 git add .gitmodules agentic_kb
 git commit -m "Add: agentic_kb submodule (default KB)"
 git push
@@ -65,6 +103,13 @@ This way later on you can persist knowledge in personal git project effectively 
 ```bash
 # Add as submodule (read-only, will fail on push)
 agentic_kb/scripts/setup_kb.sh --read-only
+git add .gitmodules agentic_kb
+git commit -m "Add: agentic_kb submodule (read-only)"
+```
+
+```powershell
+# Add as submodule (read-only, will fail on push)
+agentic_kb/scripts/setup_kb.ps1 -ReadOnly
 git add .gitmodules agentic_kb
 git commit -m "Add: agentic_kb submodule (read-only)"
 ```
@@ -108,12 +153,21 @@ If they choose Typesense, offer to set it up and index the KB. If they choose FA
 
 ### Session Initialization
 
-**CRITICAL**: At the start of each session, update the KB to ensure access to latest knowledge.
+**CRITICAL**: At the start of each session, ask the user before updating KB from git.
+
+Ask:
+- `Do you want me to update the KB from git for this session?`
+
+Only run update commands if user confirms.
 
 If the parent repo includes the submodule, run the update script (auto-detects KB path):
 
 ```bash
 agentic_kb/scripts/update_kb.sh [submodule_path]
+```
+
+```powershell
+agentic_kb/scripts/update_kb.ps1 [-SubmodulePath <path>]
 ```
 
 If you're in the KB repo directly, use:
@@ -122,18 +176,25 @@ If you're in the KB repo directly, use:
 scripts/update_kb.sh [kb_path]
 ```
 
+```powershell
+scripts/update_kb.ps1 [-SubmodulePath <path>]
+```
+
 If the update script is missing, pull updates directly:
 
 ```bash
 git -C agentic_kb pull
 ```
 
+If user declines update, continue with local KB content and state that KB was not refreshed from git.
+
 ### Basic Search Workflow
 
-1. **Search first** - Use Typesense for fast results
-2. **Read full files** - Always read complete files, never rely on snippets alone
-3. **Cite sources** - Use format: `<file path> -> <heading>`
-4. **If not found** - Say "Not found in KB" and suggest where to add it
+1. **Confirm trigger** - Run KB search only when user explicitly asks
+2. **Search** - Use Typesense first for fast results
+3. **Read full files** - Always read complete files, never rely on snippets alone
+4. **Cite sources** - Use format: `<file path> -> <heading>`
+5. **If not found** - Say "Not found in KB" and suggest where to add it
 
 ### Smart Search (Recommended)
 
@@ -141,6 +202,10 @@ Use the smart search script that tries Typesense first, falls back to FAISS (aut
 
 ```bash
 agentic_kb/scripts/smart_search.sh "your query" [--filter "filter_expr"] [--min-score 0.8] [--kb-path PATH]
+```
+
+```powershell
+agentic_kb/scripts/smart_search.ps1 "your query" [-Filter "filter_expr"] [-MinScore 0.8] [-KbPath PATH]
 ```
 
 Examples:
@@ -158,6 +223,20 @@ agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
 agentic_kb/scripts/smart_search.sh "your query" --kb-path agentic_kb
 ```
 
+```powershell
+# Basic search
+agentic_kb/scripts/smart_search.ps1 "page numbering pandoc"
+
+# With domain filter
+agentic_kb/scripts/smart_search.ps1 "search" -Filter "domain:Search && type:howto"
+
+# Higher similarity threshold for FAISS fallback
+agentic_kb/scripts/smart_search.ps1 "git workflow" -MinScore 0.8
+
+# If auto-detection fails
+agentic_kb/scripts/smart_search.ps1 "your query" -KbPath agentic_kb
+```
+
 ## Search Methods
 
 ### Method 1: Typesense (Fast Full-Text Search)
@@ -170,25 +249,25 @@ agentic_kb/scripts/smart_search.sh "your query" --kb-path agentic_kb
 
 **Basic search:**
 ```bash
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "query"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "query"
 ```
 
 **With filters:**
 ```bash
 # Filter by domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
   --filter "domain:Document Automation"
 
 # Filter by type (howto, reference, checklist, policy, note)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
   --filter "type:howto"
 
 # Filter by status (approved, draft, deprecated)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "guide" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "guide" \
   --filter "status:approved"
 
 # Combine filters
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" \
   --filter "domain:Search && type:howto && status:approved"
 ```
 
@@ -213,7 +292,7 @@ For complete filter examples and patterns, see [references/search-patterns.md](r
 **Search from parent project root:**
 ```bash
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers \
   python agentic_kb/scripts/search.py "your query"
 cd ..
 ```
@@ -221,7 +300,7 @@ cd ..
 **With similarity threshold:**
 ```bash
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers \
   python agentic_kb/scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
 ```
@@ -283,15 +362,16 @@ When you learn new, reusable knowledge during tasks:
 
 1. Search to confirm the knowledge is not already in the KB.
 2. Ask user for confirmation before making KB edits.
-3. Follow the learning capture workflow in `knowledge/Document Automation/learning-capture-steps.md`.
-4. Follow conventions in `KNOWLEDGE_CONVENTIONS.md`.
+3. If the learning is a new problem-solving technique, explicitly propose adding it to the KB.
+4. Follow the learning capture workflow in `knowledge/Document Automation/learning-capture-steps.md`.
+5. Follow conventions in `KNOWLEDGE_CONVENTIONS.md`.
 
 ### Create a New Note Skeleton (Automated)
 
 After the user confirms, generate a correctly formatted note skeleton (frontmatter + headings) with:
 
 ```bash
-uv run python skills/kb-search/scripts/capture_note.py \
+uv run --active python skills/kb-search/scripts/capture_note.py \
   --title "Your Title" \
   --domain "Search" \
   --type note \
@@ -312,11 +392,11 @@ The script auto-detects whether the KB lives in `knowledge/` or `agentic_kb/know
 
 ```bash
 # Step 1: Broad search with domain filter
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "document automation" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "document automation" \
   --filter "domain:Document Automation && status:approved"
 
 # Step 2: Refine to how-to guides
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "document automation" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "document automation" \
   --filter "domain:Document Automation && type:howto && status:approved"
 
 # Step 3: Read the returned files
@@ -326,11 +406,11 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "document 
 
 ```bash
 # Step 1: Try Typesense
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc page numbers"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc page numbers"
 
 # Step 2: If no results, try FAISS
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers \
   python agentic_kb/scripts/search.py "how to add page numbers in pandoc"
 cd ..
 
@@ -342,11 +422,11 @@ rg "page.*number" agentic_kb/knowledge/Document\ Automation/
 
 ```bash
 # Approved policies
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "security" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "security" \
   --filter "type:policy && status:approved"
 
 # Checklists
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "deployment" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "deployment" \
   --filter "type:checklist && status:approved"
 ```
 
@@ -381,7 +461,7 @@ If FAISS search fails with index error:
 ```bash
 # Build the index (run from parent project root)
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm \
   python agentic_kb/scripts/index_kb.py
 cd ..
 ```
@@ -399,9 +479,14 @@ cd ..
 ### scripts/
 
 - `agentic_kb/scripts/update_kb.sh` - Update KB (submodule usage)
+- `agentic_kb/scripts/update_kb.ps1` - Update KB in Windows PowerShell (submodule usage)
 - `scripts/update_kb.sh` - Update KB (direct repo usage; auto-detects path)
+- `scripts/update_kb.ps1` - Update KB in Windows PowerShell (direct repo usage; auto-detects path)
 - `agentic_kb/scripts/smart_search.sh` - Smart search (submodule usage)
+- `agentic_kb/scripts/smart_search.ps1` - Smart search in Windows PowerShell (submodule usage)
 - `scripts/smart_search.sh` - Smart search (direct repo usage; auto-detects path)
+- `scripts/smart_search.ps1` - Smart search in Windows PowerShell (direct repo usage; auto-detects path)
+- `agentic_kb/scripts/setup_kb.ps1` - KB setup in Windows PowerShell (fork/default/read-only)
 
 ### references/
 

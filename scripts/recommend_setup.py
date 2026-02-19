@@ -74,8 +74,8 @@ def main() -> None:
             )
 
     print("\nThen run:")
-    print("uv run python scripts/index_kb.py")
-    print('uv run python scripts/search.py "your query"')
+    print("uv run --active python scripts/index_kb.py")
+    print('uv run --active python scripts/search.py "your query"')
 
 
 if __name__ == "__main__":

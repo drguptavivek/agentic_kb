@@ -9,23 +9,35 @@
 ```bash
 # Build vector index (takes 5-10 minutes for ~500 chunks)
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 cd ..
 ```
 
-**No dependency installation required!** The `uv run --with` flags automatically fetch dependencies.
+**No dependency installation required!** The `uv run --active --with` flags automatically fetch dependencies.
+
+**Sandbox/CI note**: If `uv` hits permission errors, use a local cache path:
+
+```bash
+export UV_CACHE_DIR="$(pwd)/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+```
+
+```powershell
+$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
+New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
+```
 
 ## Index KB
 
 ```bash
 # Rebuild index after adding/updating knowledge files
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 cd ..
 
 # Use custom embedding model (optional)
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-mpnet-base-v2
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py --model sentence-transformers/all-mpnet-base-v2
 cd ..
 ```
 
@@ -34,22 +46,22 @@ cd ..
 ```bash
 # Basic search
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
 cd ..
 
 # Limit results
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering concepts" --k 10
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering concepts" --k 10
 cd ..
 
 # Filter by similarity score
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering pandoc" --min-score 0.8
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering pandoc" --min-score 0.8
 cd ..
 
 # Rebuild index and search in one go
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/search.py "authentication patterns" --rebuild
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/search.py "authentication patterns" --rebuild
 cd ..
 ```
 
@@ -88,12 +100,12 @@ ls agentic_kb/.kb_index/
 # Rebuild if corrupted
 cd agentic_kb
 rm -rf .kb_index
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 cd ..
 
 # Test with simple query
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "test" --k 1
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "test" --k 1
 cd ..
 ```
 
@@ -113,13 +125,13 @@ cd ..
 
 1. **Start with Typesense** (faster):
    ```bash
-   uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering"
+   uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering"
    ```
 
 2. **Use FAISS if needed** (semantic):
    ```bash
    cd agentic_kb
-   uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "document formatting concepts" --min-score 0.8
+   uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "document formatting concepts" --min-score 0.8
    cd ..
    ```
 
@@ -134,8 +146,8 @@ If running directly in the KB repo (not as submodule), omit directory changes:
 
 ```bash
 # Index
-uv run --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers --with tqdm python scripts/index_kb.py
 
 # Search
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
 ```

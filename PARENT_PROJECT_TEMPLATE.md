@@ -15,8 +15,8 @@ This project uses `agentic_kb` as a git submodule for reusable knowledge.
 
 **IMPORTANT**: Before answering questions, agents MUST:
 
-1. Check if the question relates to documented knowledge
-2. Search the KB using one of the methods below (prefer smart search)
+1. Search the KB only when the user explicitly asks to search/use the KB
+2. If KB search is requested, use one of the methods below (prefer smart search)
 3. Read the full files (never rely on snippets alone)
 4. Cite sources from KB when using its content
 
@@ -46,19 +46,19 @@ If Typesense is set up (5-10x faster than vector search):
 
 ```bash
 # Basic search
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering pandoc"
 
 # Filter by domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "domain:Search"
 
 # Filter by type (howto, reference, checklist, policy, note)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page" --filter "type:howto"
 
 # Filter by status (draft, approved, deprecated)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" --filter "status:approved"
 
 # Combine filters
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" \
   --filter "domain:Search && type:howto && status:approved"
 
 # See agentic_kb/QUICK-TYPESENSE-WORKFLOW.md for setup and examples
@@ -72,8 +72,8 @@ Use for semantic/conceptual queries when Typesense doesn't find relevant results
 
 ```bash
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
-uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
 
 # See agentic_kb/QUICK-FAISS-WORKFLOW.md for setup
@@ -144,7 +144,8 @@ For search setup and examples:
 ## Agent Workflow
 
 **At session start**:
-1. **Update KB submodule**: Pull latest knowledge and update pointer in parent project:
+1. **Ask first**: `Do you want me to update the KB from git for this session?`
+2. **If user says yes, update KB submodule**: Pull latest knowledge and update pointer in parent project:
    ```bash
    # Recommended: Use the update script (auto-detects KB path)
    agentic_kb/scripts/update_kb.sh [submodule_path]
@@ -155,12 +156,13 @@ For search setup and examples:
    git commit -m "Update: agentic_kb submodule to latest"
    git push
    ```
+3. **If user says no**: skip update and continue with local KB content.
 
 **During work**:
-2. **Search KB first**: Use smart search (Typesense → FAISS fallback) for best results
-3. **Read full files**: Never rely on search snippets alone - always read complete files
-4. **Follow project conventions**: Apply project-specific rules from sections above
-5. **Document learnings**: Capture reusable knowledge in the KB (see agentic_kb/KNOWLEDGE_CONVENTIONS.md)
+4. **Search KB first**: Use smart search (Typesense → FAISS fallback) for best results
+5. **Read full files**: Never rely on search snippets alone - always read complete files
+6. **Follow project conventions**: Apply project-specific rules from sections above
+7. **Document learnings**: Capture reusable knowledge in the KB, especially new problem-solving techniques (see agentic_kb/KNOWLEDGE_CONVENTIONS.md)
 ```
 
 ---

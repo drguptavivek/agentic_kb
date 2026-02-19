@@ -522,7 +522,7 @@ curl http://localhost:8108/health
 
 ### 4. Build Index
 ```bash
-uv run --with typesense --with tqdm \
+uv run --active --with typesense --with tqdm \
   python scripts/index_typesense.py
 ```
 
@@ -607,11 +607,11 @@ If you prefer using the scripts directly:
 ./scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
 
 # Typesense search
-uv run --with typesense python scripts/search_typesense.py \
+uv run --active --with typesense python scripts/search_typesense.py \
   "search strategies" --filter "domain:Search && type:howto"
 
 # FAISS semantic search
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers \
   python scripts/search.py "knowledge management" --min-score 0.75
 
 # Exact pattern matching

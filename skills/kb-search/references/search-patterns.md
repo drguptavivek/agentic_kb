@@ -54,13 +54,13 @@ Fast full-text search with typo tolerance. Returns full chunk content.
 
 ```bash
 # Basic query
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "page numbering"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "page numbering"
 
 # Multi-word phrase
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc template workflow"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc template workflow"
 
 # Technical terms
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "FAISS vector search"
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "FAISS vector search"
 ```
 
 ### FAISS Vector Search
@@ -70,13 +70,13 @@ Semantic search using embeddings. Better for conceptual queries.
 ```bash
 # From parent project root
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers \
   python scripts/search.py "how to handle authentication"
 cd ..
 
 # With similarity threshold
 cd agentic_kb
-uv run --with faiss-cpu --with numpy --with sentence-transformers \
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers \
   python scripts/search.py "document processing workflows" --min-score 0.8
 cd ..
 ```
@@ -105,15 +105,15 @@ rg -C 3 "FAISS" agentic_kb/knowledge/
 
 ```bash
 # Document Automation domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
   --filter "domain:Document Automation"
 
 # Search domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "retrieval" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "retrieval" \
   --filter "domain:Search"
 
 # Security domain
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "auth" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "auth" \
   --filter "domain:Security"
 ```
 
@@ -121,19 +121,19 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "auth" \
 
 ```bash
 # Find how-to guides
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
   --filter "type:howto"
 
 # Find reference docs
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "API" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "API" \
   --filter "type:reference"
 
 # Find checklists
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "deployment" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "deployment" \
   --filter "type:checklist"
 
 # Find policies
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "security" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "security" \
   --filter "type:policy"
 ```
 
@@ -141,15 +141,15 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "security"
 
 ```bash
 # Approved content only
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "search" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" \
   --filter "status:approved"
 
 # Draft content
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "template" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "template" \
   --filter "status:draft"
 
 # Exclude deprecated
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "workflow" \
   --filter "status:!=deprecated"
 ```
 
@@ -157,11 +157,11 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "workflow"
 
 ```bash
 # Single tag
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "guide" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "guide" \
   --filter "tags:pandoc"
 
 # Multiple tags (match any)
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "automation" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "automation" \
   --filter "tags:[pandoc,latex]"
 ```
 
@@ -173,15 +173,15 @@ Combine multiple filters using `&&` (AND) or `||` (OR).
 
 ```bash
 # Approved how-to guides in Document Automation
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" \
   --filter "domain:Document Automation && type:howto && status:approved"
 
 # Search domain reference docs
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "FAISS" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "FAISS" \
   --filter "domain:Search && type:reference"
 
 # Approved security policies
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "authentication" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "authentication" \
   --filter "domain:Security && type:policy && status:approved"
 ```
 
@@ -189,11 +189,11 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "authentic
 
 ```bash
 # Either how-to or checklist
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "deployment" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "deployment" \
   --filter "type:howto || type:checklist"
 
 # Multiple domains
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "API" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "API" \
   --filter "domain:Search || domain:Security"
 ```
 
@@ -201,7 +201,7 @@ uv run --with typesense python agentic_kb/scripts/search_typesense.py "API" \
 
 ```bash
 # Approved (how-to OR reference) in Document Automation
-uv run --with typesense python agentic_kb/scripts/search_typesense.py "template" \
+uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "template" \
   --filter "domain:Document Automation && (type:howto || type:reference) && status:approved"
 ```
 
