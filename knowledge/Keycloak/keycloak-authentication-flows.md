@@ -12,7 +12,7 @@ tags:
   - forms
 status: approved
 created: 2025-01-29
-updated: 2025-01-29
+updated: 2026-02-25
 ---
 
 # Keycloak Authentication Flows
@@ -88,6 +88,37 @@ A **flow** is a container for:
 - Executes based on condition
 - User profile, role, client, etc.
 
+### Requirement Evaluation Notes (Important)
+
+- In a flow level that contains `Required` executions, `Alternative` executions at the same level are typically not reached once required path guarantees success/failure.
+- `Conditional` is only valid for sub-flows.
+- For conditional sub-flows:
+  - If all conditions evaluate `true`, sub-flow behaves as `Required`.
+  - If any condition evaluates `false`, sub-flow behaves as `Disabled`.
+  - If no condition executions are present, sub-flow behaves as `Disabled`.
+
+### kcadm Update Pattern for Execution Requirement/Priority (Operational)
+
+When updating flow executions via Admin CLI, use JSON body mode (`-n`) on:
+
+- `authentication/flows/<flow-alias-encoded>/executions`
+
+Without `-n`, `kcadm` may send full-object update behavior that fails or does not apply as expected.
+
+Example (one-liner):
+
+```bash
+FORMS_ENC=$(jq -rn --arg s "browser-PhoneOTP forms" '$s|@uri'); EXECS=$(./kcadm.sh get "authentication/flows/$FORMS_ENC/executions" -r aiims-new-delhi --config .kcadm.config); USERPASS_ID=$(echo "$EXECS" | jq -r '.[]|select(.providerId=="auth-username-password-form")|.id' | head -n1); PHONE_ID=$(echo "$EXECS" | jq -r '.[]|select(.providerId=="phone-otp-authenticator")|.id' | head -n1); [ -n "$USERPASS_ID" ] && ./kcadm.sh update "authentication/flows/$FORMS_ENC/executions" -n -r aiims-new-delhi -s id="$USERPASS_ID" -s requirement=REQUIRED -s priority=10 --config .kcadm.config; [ -n "$PHONE_ID" ] && ./kcadm.sh update "authentication/flows/$FORMS_ENC/executions" -n -r aiims-new-delhi -s id="$PHONE_ID" -s requirement=REQUIRED -s priority=20 --config .kcadm.config
+```
+
+Verification:
+
+```bash
+FORMS_ENC=$(jq -rn --arg s "browser-PhoneOTP forms" '$s|@uri'); ./kcadm.sh get "authentication/flows/$FORMS_ENC/executions" -r aiims-new-delhi --config .kcadm.config | jq '.[]|select(.providerId=="auth-username-password-form" or .providerId=="phone-otp-authenticator" or .providerId=="auth-otp-form")|{displayName,providerId,requirement,priority,index}'
+```
+
+Observed behavior in some Keycloak 26.x builds: `unknown_error` can appear on priority updates, but values may still be applied. Always verify with a follow-up `get .../executions`.
+
 ### Authenticator Types
 
 **Form Authenticators:**
@@ -134,6 +165,25 @@ A **flow** is a container for:
 - Conditional 2FA
 - Based on user, role, IP
 - Risk-based authentication
+
+## Default Browser Flow Deep Dive
+
+The default Browser flow commonly behaves as:
+
+1. `Cookie` (alternative): if SSO cookie is valid, login succeeds early.
+2. `Kerberos` (disabled by default): skipped unless enabled/configured.
+3. `Identity Provider Redirector` (optional): can redirect to external IdP.
+4. `Forms` sub-flow (alternative): entered when cookie path did not complete login.
+   - `Username Password Form` (required)
+   - `Browser - Conditional 2FA` (conditional), typically containing:
+     - `Condition - User Configured`
+     - `Condition - credential` (for already-satisfied passkey/passwordless cases)
+     - `OTP Form` (alternative in conditional branch; effectively gated by conditions)
+
+Notes:
+- `WebAuthn Authenticator` and `Recovery Authentication Code Form` are often present as `Disabled` alternatives in the Browser conditional 2FA area.
+- Change them to `Alternative` to expose additional 2FA choices when user credentials exist.
+- If multiple alternative methods are configured for user, UI shows default by priority and exposes `Try another way`.
 
 ## Required Actions
 
@@ -198,11 +248,11 @@ public class CustomRequiredAction
 
 **Admin Console:**
 1. Authentication → Flows
-2. Click **New flow**
+2. Click **Create flow** (or duplicate a built-in flow from the action menu)
 3. Configure:
-   - **Alias** - Internal flow name
+   - **Alias/Name** - Internal flow name
    - **Description** - Flow description
-   - **Flow Type** - Generic, Form, or Client
+   - **Top-level Flow Type** - `basic` (most user flows) or `client` (client authentication only)
 4. Click **Add**
 
 ### Adding Executions
@@ -404,6 +454,39 @@ View authentication events and errors
 1. Enable WebAuthn passwordless
 2. Add to authentication flow
 3. Configure authenticator settings
+
+### Example: Passwordless Browser Login with Password+OTP Fallback
+
+Goal: let users sign in with either passkey (passwordless WebAuthn) or password+OTP.
+
+Suggested structure:
+
+1. Create flow `Browser Password-less`.
+2. Add:
+   - `Cookie` (Alternative)
+   - `Kerberos` (optional/disabled if unused)
+   - `Identity Provider Redirector` (Alternative, if brokering needed)
+3. Add `Forms` sub-flow (Alternative).
+4. Inside `Forms`:
+   - `Username Form` (collect username first)
+   - `Authentication` sub-flow (Required)
+5. Inside `Authentication`:
+   - `WebAuthn Passwordless Authenticator` (Alternative)
+   - `Password with OTP` sub-flow (Alternative)
+6. Inside `Password with OTP`:
+   - `Password Form` (Required)
+   - `OTP Form` (Required)
+7. Bind flow: Authentication -> Action menu -> Bind flow -> Browser Flow -> select new flow -> Save.
+
+Behavior after username:
+- If user has passkey credential, passkey login is offered.
+- User can choose `Try another way` and switch to password+OTP.
+- If user has no passkey, password+OTP path is used.
+- If OTP is missing and flow requires OTP, user may be prompted to configure OTP during auth.
+
+Operational caution:
+- Keep at least one strong first-factor branch (`Password Form` or `WebAuthn Passwordless`) to avoid weak configurations.
+- If `WebAuthn Passwordless` is `Alternative` (not `Required`), users are usually not forced to enroll passkeys automatically; use required actions for enrollment.
 
 ### Conditional Authentication
 
