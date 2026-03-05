@@ -38,7 +38,7 @@ FGAP v2 leaves two security gaps for a `client-manager` delegated admin role:
 custom-delegated-admin-guard-spi/
 ├── pom.xml
 └── src/main/
-    ├── java/org/aiims/keycloak/guard/
+    ├── java/tech/epidemiology/keycloak/guard/
     │   ├── DelegatedAdminGuardEventListener.java   ← Core logic
     │   └── DelegatedAdminGuardEventListenerFactory.java  ← SPI factory
     └── resources/META-INF/services/
@@ -200,13 +200,13 @@ mvn package -DskipTests
 ```bash
 # 1. Copy JAR
 docker cp target/custom-delegated-admin-guard-spi-1.0.0.jar \
-  aiims-keycloak:/opt/keycloak/providers/
+  vg-keycloak:/opt/keycloak/providers/
 
 # 2. Rebuild Keycloak (registers the new provider)
-docker exec aiims-keycloak /opt/keycloak/bin/kc.sh build --health-enabled=true
+docker exec vg-keycloak /opt/keycloak/bin/kc.sh build --health-enabled=true
 
 # 3. Restart
-docker restart aiims-keycloak
+docker restart vg-keycloak
 ```
 
 ### Register on realm (via bootstrap script)
@@ -229,12 +229,12 @@ register_event_listener(KC_URL, token, REALM, 'delegated-admin-guard')
 ### Verify registration
 
 ```bash
-docker exec aiims-keycloak /opt/keycloak/bin/kcadm.sh config credentials \
-  --server http://localhost:8080 --realm aiims-new-delhi \
+docker exec vg-keycloak /opt/keycloak/bin/kcadm.sh config credentials \
+  --server http://localhost:8080 --realm org-new-delhi \
   --user realmadmin1 --password StrongPass@123 --config /tmp/kcadm.config
 
-docker exec aiims-keycloak /opt/keycloak/bin/kcadm.sh get events/config \
-  -r aiims-new-delhi --config /tmp/kcadm.config
+docker exec vg-keycloak /opt/keycloak/bin/kcadm.sh get events/config \
+  -r org-new-delhi --config /tmp/kcadm.config
 # → "eventsListeners" : [ "delegated-admin-guard", "jboss-logging" ]
 ```
 
@@ -289,7 +289,7 @@ custom-delegated-admin-guard-spi/
 ├── pom.xml  (keycloak.version=26.5.4, java=21, includes jandex-maven-plugin)
 └── src/
     ├── main/
-    │   ├── java/org/aiims/keycloak/guard/
+    │   ├── java/tech/epidemiology/keycloak/guard/
     │   │   ├── DelegatedAdminGuardEventListener.java
     │   │   │   ├── onEvent(Event) → no-op
     │   │   │   ├── onEvent(AdminEvent) → setRollbackOnly() for CLIENT DELETE + CLIENT_SCOPE
@@ -303,7 +303,7 @@ custom-delegated-admin-guard-spi/
     │       ├── META-INF/beans.xml  (bean-discovery-mode=all, harmless in Quarkus)
     │       └── META-INF/services/
     │           └── org.keycloak.events.EventListenerProviderFactory
-    │               └── "org.aiims.keycloak.guard.DelegatedAdminGuardEventListenerFactory"
+    │               └── "tech.epidemiology.keycloak.guard.DelegatedAdminGuardEventListenerFactory"
 ```
 
 ## Key Source Files in Keycloak 26.5.4

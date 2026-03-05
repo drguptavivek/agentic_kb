@@ -108,13 +108,13 @@ Without `-n`, `kcadm` may send full-object update behavior that fails or does no
 Example (one-liner):
 
 ```bash
-FORMS_ENC=$(jq -rn --arg s "browser-PhoneOTP forms" '$s|@uri'); EXECS=$(./kcadm.sh get "authentication/flows/$FORMS_ENC/executions" -r aiims-new-delhi --config .kcadm.config); USERPASS_ID=$(echo "$EXECS" | jq -r '.[]|select(.providerId=="auth-username-password-form")|.id' | head -n1); PHONE_ID=$(echo "$EXECS" | jq -r '.[]|select(.providerId=="phone-otp-authenticator")|.id' | head -n1); [ -n "$USERPASS_ID" ] && ./kcadm.sh update "authentication/flows/$FORMS_ENC/executions" -n -r aiims-new-delhi -s id="$USERPASS_ID" -s requirement=REQUIRED -s priority=10 --config .kcadm.config; [ -n "$PHONE_ID" ] && ./kcadm.sh update "authentication/flows/$FORMS_ENC/executions" -n -r aiims-new-delhi -s id="$PHONE_ID" -s requirement=REQUIRED -s priority=20 --config .kcadm.config
+FORMS_ENC=$(jq -rn --arg s "browser-PhoneOTP forms" '$s|@uri'); EXECS=$(./kcadm.sh get "authentication/flows/$FORMS_ENC/executions" -r org-new-delhi --config .kcadm.config); USERPASS_ID=$(echo "$EXECS" | jq -r '.[]|select(.providerId=="auth-username-password-form")|.id' | head -n1); PHONE_ID=$(echo "$EXECS" | jq -r '.[]|select(.providerId=="phone-otp-authenticator")|.id' | head -n1); [ -n "$USERPASS_ID" ] && ./kcadm.sh update "authentication/flows/$FORMS_ENC/executions" -n -r org-new-delhi -s id="$USERPASS_ID" -s requirement=REQUIRED -s priority=10 --config .kcadm.config; [ -n "$PHONE_ID" ] && ./kcadm.sh update "authentication/flows/$FORMS_ENC/executions" -n -r org-new-delhi -s id="$PHONE_ID" -s requirement=REQUIRED -s priority=20 --config .kcadm.config
 ```
 
 Verification:
 
 ```bash
-FORMS_ENC=$(jq -rn --arg s "browser-PhoneOTP forms" '$s|@uri'); ./kcadm.sh get "authentication/flows/$FORMS_ENC/executions" -r aiims-new-delhi --config .kcadm.config | jq '.[]|select(.providerId=="auth-username-password-form" or .providerId=="phone-otp-authenticator" or .providerId=="auth-otp-form")|{displayName,providerId,requirement,priority,index}'
+FORMS_ENC=$(jq -rn --arg s "browser-PhoneOTP forms" '$s|@uri'); ./kcadm.sh get "authentication/flows/$FORMS_ENC/executions" -r org-new-delhi --config .kcadm.config | jq '.[]|select(.providerId=="auth-username-password-form" or .providerId=="phone-otp-authenticator" or .providerId=="auth-otp-form")|{displayName,providerId,requirement,priority,index}'
 ```
 
 Observed behavior in some Keycloak 26.x builds: `unknown_error` can appear on priority updates, but values may still be applied. Always verify with a follow-up `get .../executions`.

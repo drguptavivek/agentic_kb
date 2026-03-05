@@ -33,7 +33,7 @@ Fine-Grained Admin Permissions v2 (FGAP v2) is Keycloak 26's mechanism for deleg
 ## Architecture
 
 ```
-Realm (aiims-new-delhi)
+Realm (org-new-delhi)
 └── admin-permissions  ← System client. Acts as the Authorization Server.
     ├── Scopes: manage, view, map-roles, map-roles-client-scope,
     │           map-roles-composite, map-role, map-role-client-scope,
@@ -383,7 +383,7 @@ assert res.status_code == 204  # disabled successfully
 
 ## When admin-permissions Client Was Created
 
-The `admin-permissions` client is auto-created by Keycloak the first time `adminPermissionsEnabled` is set to `true` on a realm. In the `aiims-new-delhi` realm, this was present in the pre-upgrade backup from 2026-02-25, indicating it was created during or after the Keycloak 26 upgrade.
+The `admin-permissions` client is auto-created by Keycloak the first time `adminPermissionsEnabled` is set to `true` on a realm. In the `org-new-delhi` realm, this was present in the pre-upgrade backup from 2026-02-25, indicating it was created during or after the Keycloak 26 upgrade.
 
 ## Related Files in This Project
 

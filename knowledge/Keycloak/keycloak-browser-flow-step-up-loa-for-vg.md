@@ -1,5 +1,5 @@
 ---
-title: Keycloak Browser Flow Step-Up (LoA) for AIIMS
+title: Keycloak Browser Flow Step-Up (LoA) for VG
 type: howto
 domain: Keycloak
 tags:
@@ -15,7 +15,7 @@ created: 2026-02-25
 updated: 2026-02-25
 ---
 
-# Keycloak Browser Flow Step-Up (LoA) for AIIMS
+# Keycloak Browser Flow Step-Up (LoA) for VG
 
 ## Overview
 
@@ -23,7 +23,7 @@ This guide documents a browser login flow that supports step-up authentication i
 
 ## Preconditions
 
-- Keycloak admin access to the target realm (for example `aiims-new-delhi`)
+- Keycloak admin access to the target realm (for example `org-new-delhi`)
 - OTP authenticator configured for users who will request LoA 2
 - Existing browser flow backup or export before changing realm bindings
 

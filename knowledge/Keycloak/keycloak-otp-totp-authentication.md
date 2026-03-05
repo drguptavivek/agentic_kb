@@ -124,7 +124,7 @@ For most production realms:
 ## kcadm Example
 
 ```bash
-./kcadm.sh update realms/aiims-new-delhi \
+./kcadm.sh update realms/org-new-delhi \
   -s otpPolicyType=totp \
   -s otpPolicyAlgorithm=HmacSHA256 \
   -s otpPolicyDigits=6 \
@@ -139,7 +139,7 @@ Note: For the CLI update endpoint, algorithm values are commonly represented as 
 ## Verification
 
 ```bash
-./kcadm.sh get realms/aiims-new-delhi --config .kcadm.config | jq \
+./kcadm.sh get realms/org-new-delhi --config .kcadm.config | jq \
   '.otpPolicyType,.otpPolicyAlgorithm,.otpPolicyDigits,.otpPolicyLookAheadWindow,.otpPolicyPeriod,.otpPolicyCodeReusable,.otpPolicyInitialCounter'
 ```
 
