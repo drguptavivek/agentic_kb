@@ -25,10 +25,9 @@ This note maps Keycloak Workflows capabilities to practical use cases for the `a
 
 The current repository already implements foundational controls:
 
-- Step-up authentication (`Step_12_browser_login_flow_stepup.md`)
-- Phone OTP custom authenticator (`Step_4_PhoneSMSOTP.md`)
-- Account expiry enforcement (`Step_5_Account_expiry.md`)
-- Group/claims shaping (`Step_3_custom-group-attr-mapper_andCLAIMS.md`)
+- Phone OTP custom authenticator (`docs/Step_4_PhoneSMSOTP.md`)
+- Account expiry enforcement (`docs/Step_5_Account_expiry.md`)
+- Group/claims shaping (`docs/Step_3_custom-group-attr-mapper_andCLAIMS.md`)
 
 Workflows add lifecycle automation on top of these controls so policy execution becomes consistent and less dependent on manual admin operations.
 
