@@ -98,3 +98,7 @@ updated: 2025-12-25
 
 - [[better-auth-installation]]
 - [[better-auth-sveltekit-integration]]
+
+## Beads (bd) Issue Tracker
+
+- [[bd-beads-dolt-troubleshooting]]
