@@ -6,7 +6,7 @@ This guide explains how to install and use the `kb-search` Codex skill for searc
 
 The `kb-search` Codex skill enables Codex to:
 - Search the agentic_kb knowledge base using Typesense (fast) or FAISS (semantic)
-- Set up the KB as a submodule (fork or read-only)
+- Set up the KB as a submodule (fork or read-only) or centralized repo at `~/.agentic_kb`
 - Keep your KB synced with upstream updates
 - Follow proper retrieval workflows (search -> read -> cite)
 - Document new knowledge back to the KB
@@ -14,11 +14,11 @@ The `kb-search` Codex skill enables Codex to:
 ## Prerequisites
 
 - **Codex CLI** - OpenAI's CLI tool
-- **Git** - For submodule management
+- **Git** - For submodule or centralized repo management
 - **Python 3.8+** with `uv` - For running search scripts
 - **Docker** (optional) - For Typesense server
 
-If you are on Windows PowerShell, use `*.ps1` script variants where available.
+Windows/PowerShell commands are separated from normal Mac/Linux usage. Load `skills/kb-search/references/windows-powershell.md` only when needed.
 
 ## Sandbox/CI Note
 
@@ -29,10 +29,7 @@ export UV_CACHE_DIR="$(pwd)/.uv-cache"
 mkdir -p "$UV_CACHE_DIR"
 ```
 
-```powershell
-$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
-New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
-```
+For centralized repo mode, sandboxed agents must be allowed to read and execute scripts from `~/.agentic_kb` or `$AGENTIC_KB_PATH`. Allowlist that directory specifically rather than granting broad home-directory access.
 
 ## Installation
 
@@ -103,6 +100,7 @@ Copy-Item "skills/kb-search" "$HOME/.codex/skills/" -Recurse -Force
 The skill is installed if you see it listed in Codex's available skills. You can trigger it by asking Codex to:
 - "Search the KB for..."
 - "Set up the agentic_kb knowledge base"
+- "Set up agentic_kb as a centralized repo"
 - "Update the KB to latest"
 
 ## Using the Skill
@@ -112,7 +110,7 @@ The skill is installed if you see it listed in Codex's available skills. You can
 The skill automatically activates when you:
 - Ask "How do I..." questions that should consult the KB
 - Request to search the KB explicitly
-- Want to update the KB submodule
+- Want to update the KB submodule or centralized repo
 - Need to document new knowledge
 
 ### Manual Commands
@@ -122,28 +120,20 @@ If you want to use the scripts directly:
 ```bash
 # Setup KB (first time)
 scripts/setup_kb.sh --read-only  # or without flag for fork mode
+scripts/setup_kb.sh --central    # shared ~/.agentic_kb mode
 
 # Update KB (each session, auto-detects KB path)
 scripts/update_kb.sh [kb_path]
+~/.agentic_kb/scripts/update_kb.sh
 
 # Search KB (smart search with fallback, auto-detects KB path)
 scripts/smart_search.sh "your query"
 scripts/smart_search.sh "pandoc" --filter "domain:Document Automation"
 scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
+~/.agentic_kb/scripts/smart_search.sh "your query"
 ```
 
-```powershell
-# Setup KB (first time)
-scripts/setup_kb.ps1 -ReadOnly  # or use -ForkUrl / -Default
-
-# Update KB (each session, auto-detects KB path)
-scripts/update_kb.ps1 [-SubmodulePath <kb_path>]
-
-# Search KB (smart search with fallback, auto-detects KB path)
-scripts/smart_search.ps1 "your query"
-scripts/smart_search.ps1 "pandoc" -Filter "domain:Document Automation"
-scripts/smart_search.ps1 "your query" -KbPath path/to/agentic_kb
-```
+For PowerShell equivalents, use `skills/kb-search/references/windows-powershell.md`.
 
 ## Typesense Setup (Recommended)
 

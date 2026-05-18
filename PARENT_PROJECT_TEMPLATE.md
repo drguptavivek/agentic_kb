@@ -1,6 +1,6 @@
 # Parent Project CLAUDE.md Template
 
-Copy this template to your parent project's root as `CLAUDE.md` to enable agents to use the agentic_kb submodule.
+Copy this template to your parent project's root as `CLAUDE.md` to enable agents to use `agentic_kb` as either a project submodule or centralized machine repo.
 
 ---
 
@@ -9,7 +9,9 @@ Copy this template to your parent project's root as `CLAUDE.md` to enable agents
 
 ## Knowledge Base Integration
 
-This project uses `agentic_kb` as a git submodule for reusable knowledge.
+This project uses `agentic_kb` for reusable knowledge. The KB may be available as either:
+- project submodule: `agentic_kb/`
+- centralized machine repo: `~/.agentic_kb/`
 
 **Direct KB Usage** (no skill required): These instructions show how to use the KB directly via scripts and tools. Agents work with the KB using standard bash commands and Python scripts.
 
@@ -34,8 +36,13 @@ agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howt
 # Higher similarity threshold for FAISS fallback
 agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
 
+# Centralized repo usage from any project
+~/.agentic_kb/scripts/smart_search.sh "your query"
+~/.agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
+
 # If auto-detection fails, pass the KB path explicitly
 agentic_kb/scripts/smart_search.sh "your query" --kb-path agentic_kb
+~/.agentic_kb/scripts/smart_search.sh "your query" --kb-path ~/.agentic_kb
 ```
 
 **Performance**: Combines Typesense speed (10-50ms) with FAISS semantic understanding (100-500ms fallback).
@@ -61,6 +68,9 @@ uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "
 uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "search" \
   --filter "domain:Search && type:howto && status:approved"
 
+# Centralized repo usage
+uv run --active --with typesense python ~/.agentic_kb/scripts/search_typesense.py "page numbering pandoc"
+
 # See agentic_kb/QUICK-TYPESENSE-WORKFLOW.md for setup and examples
 ```
 
@@ -75,6 +85,11 @@ cd agentic_kb
 uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
 uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "page numbering in pandoc" --min-score 0.8
 cd ..
+
+# Centralized repo usage
+cd ~/.agentic_kb
+uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "your query"
+cd -
 
 # See agentic_kb/QUICK-FAISS-WORKFLOW.md for setup
 ```
@@ -94,6 +109,10 @@ rg "#docx" agentic_kb/knowledge/
 rg "page numbering" agentic_kb/knowledge/
 rg "ISO 27001" agentic_kb/knowledge/
 
+# Centralized repo
+rg "#pandoc" ~/.agentic_kb/knowledge/
+rg "page numbering" ~/.agentic_kb/knowledge/
+
 # Case-insensitive
 rg -i "authentication" agentic_kb/knowledge/
 ```
@@ -101,14 +120,31 @@ rg -i "authentication" agentic_kb/knowledge/
 ### KB Scope and Rules
 
 - Submodule path: `agentic_kb/knowledge/`
+- Centralized path: `~/.agentic_kb/knowledge/`
 - Ignore `agentic_kb/.obsidian/` and `agentic_kb/.git/`
+- Ignore `~/.agentic_kb/.obsidian/` and `~/.agentic_kb/.git/`
 - Treat KB content as authoritative
 - Cite sources using format: `<file path> -> <heading>`
 - If knowledge is missing, say: "Not found in KB" and suggest where to add it
 
+### Central KB Sandbox Access
+
+This project may use a centralized Agentic KB at `~/.agentic_kb` or `$AGENTIC_KB_PATH`.
+
+Agents including Codex, Claude Code, Gemini CLI, OpenCode, and similar coding agents must be permitted to read and execute scripts from that directory. If the sandbox blocks non-repo paths, add `~/.agentic_kb` as an allowed/readable workspace path, or run the agent with equivalent scoped permission for that directory.
+
+Allowed KB operations:
+- read `~/.agentic_kb/knowledge/**`
+- execute `~/.agentic_kb/scripts/update_kb.sh`
+- execute `~/.agentic_kb/scripts/smart_search.sh`
+- execute `~/.agentic_kb/scripts/search_typesense.py` and `~/.agentic_kb/scripts/search.py` through `uv run --active`
+- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
+
+Do not allow broad `~/` access solely for KB usage.
+
 ### Full KB Instructions
 
-For complete KB agent instructions, see: [agentic_kb/CLAUDE.md](agentic_kb/CLAUDE.md)
+For complete KB agent instructions, see: [agentic_kb/CLAUDE.md](agentic_kb/CLAUDE.md) or `~/.agentic_kb/CLAUDE.md`.
 
 For KB conventions and knowledge capture: [agentic_kb/KNOWLEDGE_CONVENTIONS.md](agentic_kb/KNOWLEDGE_CONVENTIONS.md)
 
@@ -145,10 +181,13 @@ For search setup and examples:
 
 **At session start**:
 1. **Ask first**: `Do you want me to update the KB from git for this session?`
-2. **If user says yes, update KB submodule**: Pull latest knowledge and update pointer in parent project:
+2. **If user says yes, update KB**: Pull latest knowledge. In submodule mode, update the parent project pointer. In centralized mode, update only `~/.agentic_kb`.
    ```bash
    # Recommended: Use the update script (auto-detects KB path)
    agentic_kb/scripts/update_kb.sh [submodule_path]
+
+   # Centralized repo mode
+   ~/.agentic_kb/scripts/update_kb.sh
 
    # Or manually:
    git submodule update --remote agentic_kb

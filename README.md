@@ -6,7 +6,7 @@ tags:
 
 # agentic_kb
 
-Cross repo knowledge base that may be referenced by multiple repositories as git submodule.
+Cross repo knowledge base that may be referenced by multiple repositories as a git submodule or as one centralized per-user clone at `~/.agentic_kb`.
 
 **Obsidian-enabled knowledge base** with folder organization, wikilinks, and graph view.
 
@@ -20,12 +20,6 @@ Cross repo knowledge base that may be referenced by multiple repositories as git
 # Bash
 export UV_CACHE_DIR="$(pwd)/.uv-cache"
 mkdir -p "$UV_CACHE_DIR"
-```
-
-```powershell
-# PowerShell
-$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
-New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
 ```
 
 **Need to add or update knowledge?** See [INSTRUCTIONS.md](INSTRUCTIONS.md)
@@ -61,7 +55,36 @@ cp kb-search.skill ~/.claude/skills/
 
 ## Using This Knowledge Base in Your Projects
 
-Best practice: use this repo as a git submodule.
+Best practice for project-pinned knowledge is to use this repo as a git submodule. For machine-wide shared knowledge across many projects, use centralized repo mode.
+
+### Centralized Repo Mode
+
+Use this when multiple projects on one machine should share the same KB checkout without adding a submodule to each project.
+
+```bash
+# Default central clone at ~/.agentic_kb
+scripts/setup_kb.sh --central
+
+# Or use your fork
+scripts/setup_kb.sh --central --fork-url <YOUR_FORK_URL>
+
+# Optional custom path
+AGENTIC_KB_PATH=/path/to/agentic_kb scripts/setup_kb.sh --central
+```
+
+From any project:
+
+```bash
+~/.agentic_kb/scripts/update_kb.sh
+~/.agentic_kb/scripts/smart_search.sh "your query"
+
+# Or set once in your shell profile
+export AGENTIC_KB_PATH="$HOME/.agentic_kb"
+```
+
+Central mode is not pinned per project. If a project needs reproducible knowledge state, use submodule mode instead.
+
+Sandboxed agents often block non-repo script execution by default. For Codex, Claude Code, Gemini CLI, OpenCode, and similar tools, add parent-project instructions that allow read/execute access to `~/.agentic_kb` or `$AGENTIC_KB_PATH` while avoiding broad home-directory access. See [GIT_WORKFLOWS.md](GIT_WORKFLOWS.md#agent-sandbox-access-for-central-mode).
 
 ### Add as Submodule
 
@@ -196,6 +219,9 @@ uv run --active --with typesense --with tqdm python scripts/index_typesense.py
 
 # Submodule usage
 uv run --active --with typesense --with tqdm python agentic_kb/scripts/index_typesense.py
+
+# Centralized repo usage
+uv run --active --with typesense --with tqdm python ~/.agentic_kb/scripts/index_typesense.py
 ```
 
 3. Search:
@@ -206,6 +232,9 @@ uv run --active --with typesense python scripts/search_typesense.py "page number
 
 # Submodule usage
 uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
+
+# Centralized repo usage
+uv run --active --with typesense python ~/.agentic_kb/scripts/search_typesense.py "pandoc" --filter "tags:=[pandoc, docx]"
 ```
 
 **When to Use**:

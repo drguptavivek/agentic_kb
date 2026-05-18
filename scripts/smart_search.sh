@@ -53,6 +53,12 @@ detect_kb_path() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     script_root="$(cd "$script_dir/.." && pwd)"
 
+    # Explicit environment override for centralized installs.
+    if [ -n "${AGENTIC_KB_PATH:-}" ] && [ -d "$AGENTIC_KB_PATH/knowledge" ] && [ -f "$AGENTIC_KB_PATH/scripts/search_typesense.py" ]; then
+        echo "$AGENTIC_KB_PATH"
+        return 0
+    fi
+
     # If running from inside the KB repo (submodule or direct clone)
     if [ -d "$script_root/knowledge" ] && [ -f "$script_root/scripts/search_typesense.py" ]; then
         echo "$script_root"
@@ -68,6 +74,12 @@ detect_kb_path() {
     # If running from the KB repo root directly
     if [ -d "knowledge" ] && [ -f "scripts/search_typesense.py" ]; then
         echo "."
+        return 0
+    fi
+
+    # Centralized per-user clone shared by multiple projects.
+    if [ -d "$HOME/.agentic_kb/knowledge" ] && [ -f "$HOME/.agentic_kb/scripts/search_typesense.py" ]; then
+        echo "$HOME/.agentic_kb"
         return 0
     fi
 

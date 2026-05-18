@@ -14,6 +14,10 @@ $ErrorActionPreference = "Stop"
 function Detect-KbPath {
     $scriptRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
+    if ($env:AGENTIC_KB_PATH -and (Test-Path (Join-Path $env:AGENTIC_KB_PATH "knowledge")) -and (Test-Path (Join-Path $env:AGENTIC_KB_PATH "scripts/search_typesense.py"))) {
+        return $env:AGENTIC_KB_PATH
+    }
+
     if ((Test-Path (Join-Path $scriptRoot "knowledge")) -and (Test-Path (Join-Path $scriptRoot "scripts/search_typesense.py"))) {
         return $scriptRoot
     }
@@ -24,6 +28,11 @@ function Detect-KbPath {
 
     if ((Test-Path "knowledge") -and (Test-Path "scripts/search_typesense.py")) {
         return "."
+    }
+
+    $centralPath = Join-Path $HOME ".agentic_kb"
+    if ((Test-Path (Join-Path $centralPath "knowledge")) -and (Test-Path (Join-Path $centralPath "scripts/search_typesense.py"))) {
+        return $centralPath
     }
 
     return $null
@@ -38,13 +47,18 @@ if ([string]::IsNullOrWhiteSpace($KbPath)) {
     }
 }
 
+$resolvedKbPath = (Resolve-Path $KbPath).Path
+$localUvCacheDir = Join-Path $resolvedKbPath ".uv-cache"
+New-Item -ItemType Directory -Path $localUvCacheDir -Force | Out-Null
+$env:UV_CACHE_DIR = $localUvCacheDir
+
 Write-Host "Searching KB for: $Query"
 Write-Host ""
 Write-Host "Trying Typesense (fast full-text search)..."
 
 $tempResults = [System.IO.Path]::GetTempFileName()
 try {
-    $typesenseArgs = @("run", "--with", "typesense", "python", (Join-Path $KbPath "scripts/search_typesense.py"), $Query)
+    $typesenseArgs = @("run", "--active", "--with", "typesense", "python", (Join-Path $KbPath "scripts/search_typesense.py"), $Query)
     if (-not [string]::IsNullOrWhiteSpace($Filter)) {
         $typesenseArgs += @("--filter", $Filter)
     }
@@ -75,7 +89,7 @@ Write-Host ""
 
 Push-Location $KbPath
 try {
-    & uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py $Query --min-score $MinScore
+    & uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py $Query --min-score $MinScore
     exit $LASTEXITCODE
 } finally {
     Pop-Location

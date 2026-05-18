@@ -5,18 +5,55 @@ param(
     [string]$SubmodulePath = "agentic_kb",
     [switch]$ReadOnly,
     [switch]$Default,
+    [switch]$Central,
     [string]$ForkUrl = ""
 )
 
 $ErrorActionPreference = "Stop"
 
 $UpstreamRepo = "https://github.com/drguptavivek/agentic_kb.git"
+$CentralPath = if ($env:AGENTIC_KB_PATH) { $env:AGENTIC_KB_PATH } else { Join-Path $HOME ".agentic_kb" }
 if ($Default) {
     $ForkUrl = $UpstreamRepo
 }
 
 Write-Host "Setting up agentic_kb knowledge base"
 Write-Host ""
+
+if ($Central) {
+    $cloneUrl = if ([string]::IsNullOrWhiteSpace($ForkUrl)) { $UpstreamRepo } else { $ForkUrl }
+
+    Write-Host "Setting up centralized KB at: $CentralPath"
+    Write-Host ""
+
+    if ((Test-Path $CentralPath) -and -not (Test-Path (Join-Path $CentralPath ".git"))) {
+        Write-Host "Error: $CentralPath exists but is not a git repository"
+        exit 1
+    }
+
+    if (Test-Path (Join-Path $CentralPath ".git")) {
+        Write-Host "Central KB already exists"
+        Write-Host "Pulling latest changes..."
+        git -C $CentralPath pull --ff-only origin main
+        if ($LASTEXITCODE -ne 0) {
+            git -C $CentralPath pull --ff-only origin master
+        }
+    } else {
+        Write-Host "Cloning KB..."
+        git clone $cloneUrl $CentralPath
+    }
+
+    Write-Host ""
+    Write-Host "Central KB is ready at: $CentralPath"
+    Write-Host ""
+    Write-Host "Use from any project:"
+    Write-Host "  $CentralPath/scripts/smart_search.sh `"your query`""
+    Write-Host "  $CentralPath/scripts/update_kb.sh"
+    Write-Host ""
+    Write-Host "Optional environment override:"
+    Write-Host "  `$env:AGENTIC_KB_PATH = `"$CentralPath`""
+    exit 0
+}
 
 if (Test-Path -Path $SubmodulePath -PathType Container) {
     Write-Host "KB already exists at: $SubmodulePath"

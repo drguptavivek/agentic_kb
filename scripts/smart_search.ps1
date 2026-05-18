@@ -14,6 +14,10 @@ $ErrorActionPreference = "Stop"
 function Detect-KbPath {
     $scriptRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
+    if ($env:AGENTIC_KB_PATH -and (Test-Path (Join-Path $env:AGENTIC_KB_PATH "knowledge")) -and (Test-Path (Join-Path $env:AGENTIC_KB_PATH "scripts/search_typesense.py"))) {
+        return $env:AGENTIC_KB_PATH
+    }
+
     if ((Test-Path (Join-Path $scriptRoot "knowledge")) -and (Test-Path (Join-Path $scriptRoot "scripts/search_typesense.py"))) {
         return $scriptRoot
     }
@@ -24,6 +28,11 @@ function Detect-KbPath {
 
     if ((Test-Path "knowledge") -and (Test-Path "scripts/search_typesense.py")) {
         return "."
+    }
+
+    $centralPath = Join-Path $HOME ".agentic_kb"
+    if ((Test-Path (Join-Path $centralPath "knowledge")) -and (Test-Path (Join-Path $centralPath "scripts/search_typesense.py"))) {
+        return $centralPath
     }
 
     return $null

@@ -8,14 +8,14 @@ tags:
 
 This is the single source of truth for agent behavior when using this KB.
 
-Windows note: when running in PowerShell, prefer `scripts/*.ps1` over `scripts/*.sh`.
-
-**For Parent Projects**: If this KB is used as a submodule, the parent project's `CLAUDE.md` should reference these instructions. See [GIT_WORKFLOWS.md](GIT_WORKFLOWS.md#integrating-agent-instructions-into-parent-projects) for integration template.
+**For Parent Projects**: If this KB is used as a submodule or centralized repo, the parent project's `CLAUDE.md` should reference these instructions. See [GIT_WORKFLOWS.md](GIT_WORKFLOWS.md#integrating-agent-instructions-into-parent-projects) for integration template.
 
 ## Scope and Sources
 
 - Direct repo path: `knowledge/`
 - Submodule path: `agentic_kb/knowledge/`
+- Centralized repo path: `~/.agentic_kb/knowledge/`
+- Environment override: `AGENTIC_KB_PATH=/path/to/agentic_kb`
 - Ignore `.obsidian/` and `.git/`
 - Treat the KB as authoritative
 
@@ -25,6 +25,11 @@ For initial KB setup with a submodule:
 - **With your fork**: `scripts/setup_kb.sh --fork-url <YOUR_FORK_URL>`
 - **Default KB**: `scripts/setup_kb.sh --default`
 - **Read-only**: `scripts/setup_kb.sh --read-only`
+
+For centralized setup shared by multiple projects:
+- **Default central KB**: `scripts/setup_kb.sh --central`
+- **Fork central KB**: `scripts/setup_kb.sh --central --fork-url <YOUR_FORK_URL>`
+- **Custom central path**: `AGENTIC_KB_PATH=/path/to/agentic_kb scripts/setup_kb.sh --central`
 
 For detailed setup options, see `GIT_WORKFLOWS.md`.
 
@@ -55,10 +60,42 @@ export UV_CACHE_DIR="$(pwd)/.uv-cache"
 mkdir -p "$UV_CACHE_DIR"
 ```
 
-```powershell
-$env:UV_CACHE_DIR = (Join-Path (Resolve-Path .).Path ".uv-cache")
-New-Item -ItemType Directory -Path $env:UV_CACHE_DIR -Force | Out-Null
+### Centralized Repo Sandbox Access
+
+When using centralized repo mode, agents must be allowed to read and execute scripts from the central KB path:
+
+- Default path: `~/.agentic_kb`
+- Override path: `$AGENTIC_KB_PATH`
+- Required access: read files under the KB, execute `scripts/*.sh`, and write cache/index files under the KB such as `.uv-cache/` and `.kb_index/`
+- Do not grant broad home-directory access just to use the KB; allowlist only the central KB directory when the tool supports scoped permissions.
+
+Recommended commands for sandboxed agents:
+
+```bash
+bash ~/.agentic_kb/scripts/update_kb.sh
+bash ~/.agentic_kb/scripts/smart_search.sh "your query"
 ```
+
+Tool-specific instruction text for parent projects:
+
+```markdown
+## Central KB Sandbox Access
+
+This project may use a centralized Agentic KB at `~/.agentic_kb` or `$AGENTIC_KB_PATH`.
+
+Agents including Codex, Claude Code, Gemini CLI, OpenCode, and similar coding agents must be permitted to read and execute scripts from that directory. If the sandbox blocks non-repo paths, add `~/.agentic_kb` as an allowed/readable workspace path, or run the agent with equivalent scoped permission for that directory.
+
+Allowed KB operations:
+- read `~/.agentic_kb/knowledge/**`
+- execute `~/.agentic_kb/scripts/update_kb.sh`
+- execute `~/.agentic_kb/scripts/smart_search.sh`
+- execute `~/.agentic_kb/scripts/search_typesense.py` and `~/.agentic_kb/scripts/search.py` through `uv run --active`
+- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
+
+Do not allow broad `~/` access solely for KB usage.
+```
+
+Windows/PowerShell instructions are intentionally kept out of the default Mac/Linux flow. If needed, use `skills/kb-search/references/windows-powershell.md`.
 
 ## Session Initialization
 
@@ -75,6 +112,9 @@ scripts/update_kb.sh
 
 # If KB is a submodule and you're in the parent repo:
 agentic_kb/scripts/update_kb.sh
+
+# If using centralized KB from any project:
+~/.agentic_kb/scripts/update_kb.sh
 
 # Or manually update submodule:
 git submodule update --remote agentic_kb
@@ -125,6 +165,10 @@ agentic_kb/scripts/smart_search.sh "git workflow" --min-score 0.8
 scripts/smart_search.sh "your query"
 scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
 
+# If using centralized KB from any project:
+~/.agentic_kb/scripts/smart_search.sh "your query"
+~/.agentic_kb/scripts/smart_search.sh "search" --filter "domain:Search && type:howto"
+
 # If auto-detection fails:
 scripts/smart_search.sh "your query" --kb-path path/to/agentic_kb
 ```
@@ -141,6 +185,10 @@ rg "page number" knowledge/
 # Submodule
 rg "pandoc" agentic_kb/knowledge/
 rg "page number" agentic_kb/knowledge/
+
+# Centralized repo
+rg "pandoc" ~/.agentic_kb/knowledge/
+rg "page number" ~/.agentic_kb/knowledge/
 ```
 
 ## Typesense Full-Text Search (Recommended)

@@ -49,6 +49,62 @@ git push
 
 If user says no, skip git update and continue with local KB content.
 
+## Workflow: Centralized KB Repo for Multiple Projects
+
+Use this when many projects on the same machine should share one KB checkout at `~/.agentic_kb`.
+
+### Install or Update Central KB
+
+```bash
+# From this KB repo
+scripts/setup_kb.sh --central
+
+# Or use a personal fork
+scripts/setup_kb.sh --central --fork-url <YOUR_FORK_URL>
+
+# Optional custom path
+AGENTIC_KB_PATH=/path/to/agentic_kb scripts/setup_kb.sh --central
+```
+
+### Use Central KB From Any Project
+
+```bash
+~/.agentic_kb/scripts/update_kb.sh
+~/.agentic_kb/scripts/smart_search.sh "your query"
+rg "your query" ~/.agentic_kb/knowledge/
+```
+
+If you want scripts to find a non-default central path:
+
+```bash
+export AGENTIC_KB_PATH=/path/to/agentic_kb
+```
+
+Central mode does not update or commit anything in the parent project. Use it for shared machine-local knowledge. Use submodule mode when a project needs a pinned, reviewable KB revision.
+
+### Agent Sandbox Access for Central Mode
+
+Some coding agents disallow script execution from non-repo paths by default. Parent project instructions should explicitly allow the central KB directory.
+
+Recommended parent-project instruction:
+
+```markdown
+## Central KB Sandbox Access
+
+This project may use a centralized Agentic KB at `~/.agentic_kb` or `$AGENTIC_KB_PATH`.
+
+Agents including Codex, Claude Code, Gemini CLI, OpenCode, and similar coding agents must be permitted to read and execute scripts from that directory. If the sandbox blocks non-repo paths, add `~/.agentic_kb` as an allowed/readable workspace path, or run the agent with equivalent scoped permission for that directory.
+
+Allowed KB operations:
+- read `~/.agentic_kb/knowledge/**`
+- execute `~/.agentic_kb/scripts/update_kb.sh`
+- execute `~/.agentic_kb/scripts/smart_search.sh`
+- execute `~/.agentic_kb/scripts/search_typesense.py` and `~/.agentic_kb/scripts/search.py` through `uv run --active`
+- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
+
+Do not allow broad `~/` access solely for KB usage.
+```
+
 ### Make KB Changes From Inside Project
 
 ```bash
@@ -72,14 +128,17 @@ git push
 # Clone into a workspace
 git clone https://github.com/you/agentic_kb.git agentic_kb
 
-# Or add as submodule (recommended for projects)
+# Or add as submodule (recommended when projects need pinned KB revisions)
 git submodule add https://github.com/you/agentic_kb.git agentic_kb
 git submodule update --init --recursive
+
+# Or install one central shared checkout for the whole machine
+git clone https://github.com/you/agentic_kb.git ~/.agentic_kb
 ```
 
 ## Integrating Agent Instructions into Parent Projects
 
-When using this KB as a submodule, parent projects should reference the KB's agent instructions in their own `CLAUDE.md` or `AGENTS.md` file.
+When using this KB as a submodule or centralized repo, parent projects should reference the KB's agent instructions in their own `CLAUDE.md` or `AGENTS.md` file.
 
 ### Setup: Parent Project Agent Instructions
 
@@ -90,7 +149,9 @@ Create or update `CLAUDE.md` in your parent project's root:
 
 ## Knowledge Base Integration
 
-This project uses `agentic_kb` as a git submodule for reusable knowledge.
+This project uses `agentic_kb` for reusable knowledge. The KB may be available as either:
+- project submodule: `agentic_kb/`
+- centralized machine repo: `~/.agentic_kb/`
 
 **IMPORTANT**: Before answering questions, agents MUST:
 
@@ -106,8 +167,13 @@ This project uses `agentic_kb` as a git submodule for reusable knowledge.
 rg "your query" agentic_kb/knowledge/
 rg "#tag" agentic_kb/knowledge/
 
+# Search in centralized repo
+rg "your query" ~/.agentic_kb/knowledge/
+rg "#tag" ~/.agentic_kb/knowledge/
+
 # Typesense search (recommended - fast)
 uv run --active --with typesense python agentic_kb/scripts/search_typesense.py "your query"
+uv run --active --with typesense python ~/.agentic_kb/scripts/search_typesense.py "your query"
 
 # Vector search (if enabled - semantic)
 cd agentic_kb
@@ -118,10 +184,11 @@ cd ..
 ### KB Scope
 - Direct repo path: `knowledge/`
 - Submodule path: `agentic_kb/knowledge/`
+- Centralized path: `~/.agentic_kb/knowledge/`
 - Ignore `.obsidian/` and `.git/`
 - Treat KB content as authoritative
 
-For full KB agent instructions, see: [agentic_kb/AGENTS.md](agentic_kb/AGENTS.md)
+For full KB agent instructions, see: [agentic_kb/AGENTS.md](agentic_kb/AGENTS.md) or `~/.agentic_kb/AGENTS.md`.
 
 ## Project-Specific Instructions
 
@@ -132,7 +199,7 @@ For full KB agent instructions, see: [agentic_kb/AGENTS.md](agentic_kb/AGENTS.md
 
 To help agents automatically detect and use the KB, ensure:
 
-1. **File exists**: `agentic_kb/AGENTS.md` or `agentic_kb/CLAUDE.md`
+1. **File exists**: `agentic_kb/AGENTS.md`, `agentic_kb/CLAUDE.md`, or `~/.agentic_kb/AGENTS.md`
 2. **Parent references it**: Your `CLAUDE.md` includes the patterns above
 3. **Submodule is initialized**: Run `git submodule update --init --recursive`
 

@@ -53,6 +53,12 @@ detect_kb_path() {
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     script_root="$(cd "$script_dir/.." && pwd)"
 
+    # Explicit environment override for centralized installs.
+    if [ -n "${AGENTIC_KB_PATH:-}" ] && [ -d "$AGENTIC_KB_PATH/knowledge" ] && [ -f "$AGENTIC_KB_PATH/scripts/search_typesense.py" ]; then
+        echo "$AGENTIC_KB_PATH"
+        return 0
+    fi
+
     # If running from inside the KB repo (submodule or direct clone)
     if [ -d "$script_root/knowledge" ] && [ -f "$script_root/scripts/search_typesense.py" ]; then
         echo "$script_root"
@@ -71,6 +77,12 @@ detect_kb_path() {
         return 0
     fi
 
+    # Centralized per-user clone shared by multiple projects.
+    if [ -d "$HOME/.agentic_kb/knowledge" ] && [ -f "$HOME/.agentic_kb/scripts/search_typesense.py" ]; then
+        echo "$HOME/.agentic_kb"
+        return 0
+    fi
+
     return 1
 }
 
@@ -85,9 +97,18 @@ fi
 echo "🔍 Searching KB for: $QUERY"
 echo ""
 
+# Keep uv writable paths inside the repo for sandboxed environments.
+if [ "$KB_PATH" = "." ]; then
+    KB_ABS_PATH="$(pwd)"
+else
+    KB_ABS_PATH="$(cd "$KB_PATH" && pwd)"
+fi
+export UV_CACHE_DIR="$KB_ABS_PATH/.uv-cache"
+mkdir -p "$UV_CACHE_DIR"
+
 # Try Typesense first
 echo "📊 Trying Typesense (fast full-text search)..."
-TYPESENSE_CMD="uv run --with typesense python \"$KB_PATH/scripts/search_typesense.py\" \"$QUERY\""
+TYPESENSE_CMD="uv run --active --with typesense python \"$KB_PATH/scripts/search_typesense.py\" \"$QUERY\""
 if [ -n "$FILTER" ]; then
     TYPESENSE_CMD="$TYPESENSE_CMD --filter \"$FILTER\""
 fi
@@ -118,5 +139,5 @@ echo ""
 
 (
     cd "$KB_PATH"
-    uv run --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "$QUERY" --min-score "$MIN_SCORE"
+    uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "$QUERY" --min-score "$MIN_SCORE"
 )
