@@ -138,7 +138,7 @@ Allowed KB operations:
 - execute `~/.agentic_kb/scripts/update_kb.sh`
 - execute `~/.agentic_kb/scripts/smart_search.sh`
 - execute `~/.agentic_kb/scripts/search_typesense.py` and `~/.agentic_kb/scripts/search.py` through `uv run --active`
-- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
+- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.venv/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
 
 Do not allow broad `~/` access solely for KB usage.
 

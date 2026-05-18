@@ -34,6 +34,8 @@ Use first existing path:
 3. `~/.agentic_kb/`
 4. current repo root with `knowledge/`
 
+Central default: KB content/scripts in `~/.agentic_kb`; installed skill in `~/.agents/skills/kb-search`.
+
 ## Search
 
 Prefer smart search:
@@ -71,4 +73,4 @@ scripts/update_kb.sh
 
 ## KB_Update
 
-If work reveals reusable knowledge, propose KB_Update before finishing. Do not silently edit. After user confirms: search for duplicates, add/update the best note, follow `KNOWLEDGE_CONVENTIONS.md`, and cite the changed KB file. Load `references/kb-update.md` for details.
+If work reveals reusable knowledge, propose KB_Update before finishing. Do not silently edit. After user confirms: search for duplicates, add/update the best note under the active KB `knowledge/` path, follow `KNOWLEDGE_CONVENTIONS.md`, and cite the changed KB file. Load `references/kb-update.md` for details.

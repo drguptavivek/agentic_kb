@@ -20,6 +20,36 @@ FORK_URL=""
 UPSTREAM_REPO="https://github.com/drguptavivek/agentic_kb.git"
 CENTRAL_PATH="${AGENTIC_KB_PATH:-$HOME/.agentic_kb}"
 
+prewarm_uv_state() {
+    local kb_path="$1"
+
+    if ! command -v uv >/dev/null 2>&1; then
+        echo "⚠️  uv not found; skipping Python dependency prewarm"
+        return 0
+    fi
+
+    echo ""
+    echo "🧰 Preparing KB-local uv state..."
+    export UV_CACHE_DIR="${AGENTIC_KB_UV_CACHE_DIR:-$kb_path/.uv-cache}"
+    export UV_PROJECT_ENVIRONMENT="${AGENTIC_KB_UV_ENV:-$kb_path/.venv}"
+    mkdir -p "$UV_CACHE_DIR" "$UV_PROJECT_ENVIRONMENT"
+
+    echo "   UV cache: $UV_CACHE_DIR"
+    echo "   UV env:   $UV_PROJECT_ENVIRONMENT"
+    echo "📦 Prewarming search dependencies..."
+    uv venv "$UV_PROJECT_ENVIRONMENT" >/dev/null
+    uv pip install --python "$UV_PROJECT_ENVIRONMENT/bin/python" \
+        typesense tqdm faiss-cpu numpy sentence-transformers >/dev/null || {
+        echo "⚠️  Dependency prewarm failed. KB is installed, but first search may need network/write access."
+        return 0
+    }
+    "$UV_PROJECT_ENVIRONMENT/bin/python" -c "import typesense, tqdm, faiss, numpy, sentence_transformers" >/dev/null || {
+        echo "⚠️  Dependency import check failed. KB is installed, but first search may need repair."
+        return 0
+    }
+    echo "✅ KB uv dependencies are prewarmed"
+}
+
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -67,6 +97,8 @@ if [ "$CENTRAL" = true ]; then
         echo "📥 Cloning KB..."
         git clone "$CLONE_URL" "$CENTRAL_PATH"
     fi
+
+    prewarm_uv_state "$CENTRAL_PATH"
 
     echo ""
     echo "✅ Central KB is ready at: $CENTRAL_PATH"

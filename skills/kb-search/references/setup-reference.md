@@ -23,6 +23,40 @@ Use from any project:
 ~/.agentic_kb/scripts/smart_search.sh "query"
 ```
 
+Central setup also prepares generated Python state once:
+
+```bash
+~/.agentic_kb/.uv-cache/
+~/.agentic_kb/.venv/
+```
+
+Sandboxed agents should reuse those paths instead of creating per-project dependency caches. Normal `smart_search.sh` uses `~/.agentic_kb/.venv/bin/python` directly when it exists, avoiding repeated `uv run` dependency syncs.
+
+## File Placement Contract
+
+Use this layout for central mode:
+
+```text
+~/.agentic_kb/                  # central KB repo, source of truth
+  knowledge/                    # reusable knowledge notes
+  scripts/                      # canonical KB scripts
+  .uv-cache/                    # generated dependency cache
+  .venv/                        # prewarmed Python env
+  .kb_index/                    # generated FAISS index
+
+~/.agents/skills/kb-search/      # installed agent skill
+  SKILL.md                      # token-light router
+  references/                   # lazy-loaded instructions
+  scripts/                      # packaged helper copies
+```
+
+Runtime preference:
+
+1. Execute canonical scripts from `~/.agentic_kb/scripts/`.
+2. Write KB content only under `~/.agentic_kb/knowledge/`.
+3. Use `~/.agents/skills/kb-search/` only as the installed skill interface.
+4. Treat skill-packaged scripts as fallback helpers, not the source of truth.
+
 ## Submodule Mode
 
 Personal fork:
@@ -58,7 +92,7 @@ Allowed KB operations:
 - execute `~/.agentic_kb/scripts/update_kb.sh`
 - execute `~/.agentic_kb/scripts/smart_search.sh`
 - execute `~/.agentic_kb/scripts/search_typesense.py` and `~/.agentic_kb/scripts/search.py` through `uv run --active`
-- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
+- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.venv/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
 
 Do not allow broad `~/` access solely for KB usage.
 ```

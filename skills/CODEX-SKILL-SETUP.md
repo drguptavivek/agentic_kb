@@ -26,7 +26,9 @@ If `uv` reports permission errors, set a repo-local cache before running command
 
 ```bash
 export UV_CACHE_DIR="$(pwd)/.uv-cache"
+export UV_PROJECT_ENVIRONMENT="$(pwd)/.venv"
 mkdir -p "$UV_CACHE_DIR"
+mkdir -p "$UV_PROJECT_ENVIRONMENT"
 ```
 
 For centralized repo mode, sandboxed agents must be allowed to read and execute scripts from `~/.agentic_kb` or `$AGENTIC_KB_PATH`. Allowlist that directory specifically rather than granting broad home-directory access.

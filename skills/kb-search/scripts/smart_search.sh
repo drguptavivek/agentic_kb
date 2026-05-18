@@ -97,18 +97,30 @@ fi
 echo "🔍 Searching KB for: $QUERY"
 echo ""
 
-# Keep uv writable paths inside the repo for sandboxed environments.
+# Keep uv generated state in predictable KB-local paths.
 if [ "$KB_PATH" = "." ]; then
     KB_ABS_PATH="$(pwd)"
 else
     KB_ABS_PATH="$(cd "$KB_PATH" && pwd)"
 fi
-export UV_CACHE_DIR="$KB_ABS_PATH/.uv-cache"
-mkdir -p "$UV_CACHE_DIR"
+export UV_CACHE_DIR="${AGENTIC_KB_UV_CACHE_DIR:-$KB_ABS_PATH/.uv-cache}"
+export UV_PROJECT_ENVIRONMENT="${AGENTIC_KB_UV_ENV:-$KB_ABS_PATH/.venv}"
+mkdir -p "$UV_CACHE_DIR" "$UV_PROJECT_ENVIRONMENT" || {
+    echo "❌ Error: Cannot write KB uv state."
+    echo "   Allow write access to: $UV_CACHE_DIR"
+    echo "   Allow write access to: $UV_PROJECT_ENVIRONMENT"
+    echo "   Or set AGENTIC_KB_UV_CACHE_DIR and AGENTIC_KB_UV_ENV to writable paths."
+    exit 1
+}
+KB_PYTHON="$UV_PROJECT_ENVIRONMENT/bin/python"
 
 # Try Typesense first
 echo "📊 Trying Typesense (fast full-text search)..."
-TYPESENSE_CMD="uv run --active --with typesense python \"$KB_PATH/scripts/search_typesense.py\" \"$QUERY\""
+if [ -x "$KB_PYTHON" ]; then
+    TYPESENSE_CMD="\"$KB_PYTHON\" \"$KB_ABS_PATH/scripts/search_typesense.py\" \"$QUERY\""
+else
+    TYPESENSE_CMD="uv run --no-project --with typesense python \"$KB_ABS_PATH/scripts/search_typesense.py\" \"$QUERY\""
+fi
 if [ -n "$FILTER" ]; then
     TYPESENSE_CMD="$TYPESENSE_CMD --filter \"$FILTER\""
 fi
@@ -138,6 +150,10 @@ echo "🧠 Falling back to FAISS (semantic vector search)..."
 echo ""
 
 (
-    cd "$KB_PATH"
-    uv run --active --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "$QUERY" --min-score "$MIN_SCORE"
+    cd "$KB_ABS_PATH"
+    if [ -x "$KB_PYTHON" ]; then
+        "$KB_PYTHON" scripts/search.py "$QUERY" --min-score "$MIN_SCORE"
+    else
+        uv run --no-project --with faiss-cpu --with numpy --with sentence-transformers python scripts/search.py "$QUERY" --min-score "$MIN_SCORE"
+    fi
 )

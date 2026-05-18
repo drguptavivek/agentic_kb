@@ -34,21 +34,50 @@ uv run --active --with typesense --with tqdm python ~/.agentic_kb/scripts/index_
 
 ## UV Sandbox Errors
 
-Use a KB-local cache:
+Use KB-local generated state:
 
 ```bash
 export UV_CACHE_DIR="$(pwd)/.uv-cache"
+export UV_PROJECT_ENVIRONMENT="$(pwd)/.venv"
 mkdir -p "$UV_CACHE_DIR"
+mkdir -p "$UV_PROJECT_ENVIRONMENT"
 ```
 
 For central mode:
 
 ```bash
 export UV_CACHE_DIR="$HOME/.agentic_kb/.uv-cache"
+export UV_PROJECT_ENVIRONMENT="$HOME/.agentic_kb/.venv"
 mkdir -p "$UV_CACHE_DIR"
+mkdir -p "$UV_PROJECT_ENVIRONMENT"
 ```
 
-If sandbox still blocks access, request scoped permission for the KB directory only.
+If sandbox still blocks access, request scoped write permission for only:
+
+```text
+~/.agentic_kb/.uv-cache/
+~/.agentic_kb/.venv/
+~/.agentic_kb/.kb_index/
+```
+
+If the agent cannot receive that permission, set `AGENTIC_KB_UV_CACHE_DIR` and `AGENTIC_KB_UV_ENV` to writable temp paths. This avoids repeated downloads less reliably than the central prewarmed env.
+
+## Prewarm Central Python Env
+
+Run once during setup:
+
+```bash
+~/.agentic_kb/scripts/setup_kb.sh --central
+```
+
+Or repair manually:
+
+```bash
+export UV_CACHE_DIR="$HOME/.agentic_kb/.uv-cache"
+uv venv "$HOME/.agentic_kb/.venv"
+uv pip install --python "$HOME/.agentic_kb/.venv/bin/python" \
+  typesense tqdm faiss-cpu numpy sentence-transformers
+```
 
 ## FAISS Index Missing
 

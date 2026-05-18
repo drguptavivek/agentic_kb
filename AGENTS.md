@@ -57,7 +57,9 @@ When running in restricted environments, set a repo-local UV cache before `uv ru
 
 ```bash
 export UV_CACHE_DIR="$(pwd)/.uv-cache"
+export UV_PROJECT_ENVIRONMENT="$(pwd)/.venv"
 mkdir -p "$UV_CACHE_DIR"
+mkdir -p "$UV_PROJECT_ENVIRONMENT"
 ```
 
 ### Centralized Repo Sandbox Access
@@ -66,7 +68,7 @@ When using centralized repo mode, agents must be allowed to read and execute scr
 
 - Default path: `~/.agentic_kb`
 - Override path: `$AGENTIC_KB_PATH`
-- Required access: read files under the KB, execute `scripts/*.sh`, and write cache/index files under the KB such as `.uv-cache/` and `.kb_index/`
+- Required access: read files under the KB, execute `scripts/*.sh`, and write generated state under the KB such as `.uv-cache/`, `.venv/`, and `.kb_index/`
 - Do not grant broad home-directory access just to use the KB; allowlist only the central KB directory when the tool supports scoped permissions.
 
 Recommended commands for sandboxed agents:
@@ -90,7 +92,7 @@ Allowed KB operations:
 - execute `~/.agentic_kb/scripts/update_kb.sh`
 - execute `~/.agentic_kb/scripts/smart_search.sh`
 - execute `~/.agentic_kb/scripts/search_typesense.py` and `~/.agentic_kb/scripts/search.py` through `uv run --active`
-- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
+- write only KB-local generated state such as `~/.agentic_kb/.uv-cache/`, `~/.agentic_kb/.venv/`, `~/.agentic_kb/.kb_index/`, and Typesense indexing outputs
 
 Do not allow broad `~/` access solely for KB usage.
 ```

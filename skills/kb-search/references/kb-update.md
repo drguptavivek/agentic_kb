@@ -37,7 +37,7 @@ rg "exact phrase" agentic_kb/knowledge/ ~/.agentic_kb/knowledge/ knowledge/
 ```
 
 4. If a note exists, update it narrowly. Prefer correcting the existing note over creating a duplicate.
-5. If missing, create a note in the best domain folder.
+5. If missing, create a note in the best domain folder under the active KB `knowledge/` path, usually `~/.agentic_kb/knowledge/` in central mode.
 6. Follow `KNOWLEDGE_CONVENTIONS.md`.
 7. Rebuild/search indexes only if the user needs immediate indexed retrieval.
 8. Final response should cite changed KB file(s).

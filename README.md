@@ -19,7 +19,9 @@ Cross repo knowledge base that may be referenced by multiple repositories as a g
 ```bash
 # Bash
 export UV_CACHE_DIR="$(pwd)/.uv-cache"
+export UV_PROJECT_ENVIRONMENT="$(pwd)/.venv"
 mkdir -p "$UV_CACHE_DIR"
+mkdir -p "$UV_PROJECT_ENVIRONMENT"
 ```
 
 **Need to add or update knowledge?** See [INSTRUCTIONS.md](INSTRUCTIONS.md)
